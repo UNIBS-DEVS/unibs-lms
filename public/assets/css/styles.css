@@ -1,0 +1,217 @@
+body {
+    min-height: 100vh;
+    background-color: #f4f6f9;
+}
+
+/* ================= Sidebar ================= */
+.sidebar {
+    width: 250px;
+    min-height: 100vh;
+    background: #212529;
+    transition: width 0.3s ease;
+    overflow: hidden;
+}
+
+.sidebar.collapsed {
+    width: 70px;
+}
+
+/* Sidebar header & logo */
+.sidebar-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.sidebar-logo {
+    max-width: 220px;
+    max-height: 70px;
+    transition: all 0.3s ease;
+}
+
+.sidebar.collapsed .sidebar-logo {
+    max-width: 35px;
+}
+
+/* Sidebar links */
+.sidebar a {
+    color: #adb5bd;
+    text-decoration: none;
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+}
+
+.sidebar a i {
+    width: 25px;
+    text-align: center;
+    margin-right: 10px;
+    font-size: 15px;
+}
+
+/* Hide text & arrow when collapsed */
+.sidebar.collapsed a span,
+.sidebar.collapsed .fa-chevron-down {
+    display: none;
+}
+
+/* Hover & active */
+.sidebar a:hover,
+.sidebar a.active {
+    background: #0d6efd;
+    color: #fff;
+}
+
+/* Sidebar submenu */
+.sidebar-submenu {
+    padding: 10px 20px 10px 55px;
+    font-size: 14px;
+    color: #adb5bd;
+    display: flex;
+    align-items: center;
+    background: #1c1f23;
+}
+
+.sidebar-submenu i {
+    width: 20px;
+    margin-right: 10px;
+}
+
+.sidebar-submenu:hover,
+.sidebar-submenu.active {
+    background: #0d6efd;
+    color: #fff;
+}
+
+/* Sidebar divider */
+.sidebar>a {
+    border-bottom: 1px solid #686a6b;
+}
+
+/* Dropdown arrow animation */
+.sidebar .fa-chevron-down {
+    transition: transform 0.3s ease;
+}
+
+a[aria-expanded="true"] .fa-chevron-down {
+    transform: rotate(180deg);
+}
+
+/* ================= Content ================= */
+.content {
+    flex: 1;
+}
+
+.navbar {
+    background: #fff;
+    border-bottom: 1px solid #dee2e6;
+}
+
+/* ================= User Page ================= */
+
+/* DATATABLE TOP CONTROLS  */
+.dataTables_wrapper .dataTables_filter,
+.dataTables_wrapper .dataTables_length {
+    margin-bottom: 1rem;
+}
+
+/* SEARCH (Right side) */
+.dataTables_wrapper .dataTables_filter {
+    float: right;
+}
+
+.dataTables_wrapper .dataTables_filter label {
+    position: relative;
+    font-weight: 500;
+}
+
+.dataTables_wrapper .dataTables_filter input {
+    border-radius: 8px;
+    padding: 6px 12px 6px 36px;
+    border: 1px solid #dee2e6;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.dataTables_wrapper .dataTables_filter input:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.15rem rgba(13, 110, 253, 0.15);
+}
+
+.dataTables_wrapper .dataTables_filter label::before {
+    content: "\f002";
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 13px;
+    color: #6c757d;
+}
+
+/* SHOW ENTRIES (Left side) */
+.dataTables_wrapper .dataTables_length {
+    float: left;
+}
+
+.dataTables_wrapper .dataTables_length label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+}
+
+.dataTables_wrapper .dataTables_length select {
+    border-radius: 6px;
+    padding: 4px 8px;
+    border: 1px solid #dee2e6;
+}
+
+/* Clear floats */
+.dataTables_wrapper::after {
+    content: "";
+    display: block;
+    clear: both;
+}
+
+/* Pagination Button */
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+    padding: .15em 0.6em;
+}
+
+.dataTables_wrapper .dataTables_info {
+    padding-top: 10px;
+}
+
+#listTable_paginate {
+    padding-top: 10px;
+}
+
+/* Tables Style  */
+table thead tr th {
+    text-align: center;
+
+}
+
+/* Progress Steyle */
+.progress {
+    height: 22px;
+    border-radius: 6px;
+}
+
+.progress-bar {
+    font-weight: 600;
+}
+
+/* Batch Feedback */
+.rating-stars i {
+    font-size: 20px;
+    cursor: pointer;
+    color: #ddd;
+}
+
+.rating-stars i.active {
+    color: #ffc107;
+}
