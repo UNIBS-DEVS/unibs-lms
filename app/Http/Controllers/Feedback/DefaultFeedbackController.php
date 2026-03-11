@@ -11,6 +11,9 @@ class DefaultFeedbackController extends Controller
     public function index()
     {
         $feedbacks = DefaultFeedback::latest()->get();
+
+        // dd($feedbacks);
+
         return view('feedback.management.index', compact('feedbacks'));
     }
 
@@ -45,7 +48,7 @@ class DefaultFeedbackController extends Controller
             'type'     => 'required|in:trainer,learner',
         ]);
 
-        $feedback->update($request->only('question', 'type'));
+        $feedback->update($request->only('question', 'type', 'category'));
 
         return redirect()
             ->route('feedback.trainer.index')

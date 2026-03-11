@@ -38,11 +38,12 @@
                 <tr>
                     <th>Question</th>
                     <th>Type</th>
+                    <th>Category</th>
                     <th width="13%" class="text-center">Actions</th>
                 </tr>
 
                 <tr class="filter-row">
-                    @foreach (['Question', 'Type'] as $label)
+                    @foreach (['Question', 'Type', 'Category'] as $label)
                         <th>
                             <div class="input-group input-group-sm">
                                 <input type="text" class="form-control column-search" placeholder="{{ $label }}">
@@ -74,6 +75,8 @@
                             @endif
                         </td>
 
+                        <td> <span class="badge bg-info text-dark">{{ ucfirst($question->category) }}</span></td>
+
                         <td class="text-center">
 
                             <a href="{{ route('batch-feedback-questions.edit', [$batch->id, $question->id]) }}"
@@ -93,6 +96,8 @@
                             </form>
 
                         </td>
+
+
 
                     </tr>
                 @endforeach

@@ -15,4 +15,9 @@ class DefaultFeedback extends Model
         'type',
         'category',
     ];
+
+    public function batchQuestions()
+    {
+        return $this->hasMany(BatchFeedbackQuestion::class);
+    }
 }

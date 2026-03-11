@@ -82,7 +82,7 @@
                                                 Viva
                                             </option>
 
-                                            <option value="need_based" @selected(old('category') === 'need_based')>
+                                            <option value="need based" @selected(old('category') === 'need based')>
                                                 Need Based
                                             </option>
 

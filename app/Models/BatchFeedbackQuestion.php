@@ -9,6 +9,7 @@ class BatchFeedbackQuestion extends Model
     protected $fillable = [
         'batch_id',
         'question',
+        'category',
         'type',
     ];
 
@@ -17,5 +18,10 @@ class BatchFeedbackQuestion extends Model
     public function batch()
     {
         return $this->belongsTo(Batch::class);
+    }
+
+    public function defaultFeedback()
+    {
+        return $this->belongsTo(DefaultFeedback::class);
     }
 }

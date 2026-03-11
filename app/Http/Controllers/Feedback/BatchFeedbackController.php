@@ -4,11 +4,13 @@ namespace App\Http\Controllers\Feedback;
 
 use App\Http\Controllers\Controller;
 use App\Models\Batch;
-use App\Models\BatchFbSummary;
 use App\Models\BatchFbSubmissionDetail;
+use App\Models\BatchFbSummary;
 use App\Models\BatchFeedbackQuestion;
+use App\Models\DefaultFeedback;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use SebastianBergmann\Environment\Console;
 
 class BatchFeedbackController extends Controller
 {
@@ -17,22 +19,24 @@ class BatchFeedbackController extends Controller
         $user = Auth::user();
 
         if ($user->role === 'learner') {
-            $batches = $user->batches;
+            $batches = $user->learnerBatches()->select('batches.id', 'batches.name')->get();
+        } elseif ($user->role === 'trainer') {
+            $batches = $user->trainerBatches()->select('batches.id', 'batches.name')->get();
         } else {
-            $batches = Batch::all();
+            $batches = Batch::select('id', 'name')->get();
         }
+
+        // dd($batches);
 
         return view('batch-feedback.index', compact('batches'));
     }
 
+
     public function store(Request $request)
     {
-
-        // dd($request);
-
         $request->validate([
             'batch_id' => 'required|exists:batches,id',
-            'scores'   => 'required|array',
+            'scores.*' => 'nullable|numeric|min:1|max:5',
             'remarks'  => 'nullable|string',
         ]);
 
@@ -50,15 +54,21 @@ class BatchFeedbackController extends Controller
         } else {
 
             $request->validate([
-                'feedback_type' => 'required|in:learner,trainer',
+                'learner_id' => 'required|exists:users,id',
             ]);
 
-            $type        = $request->feedback_type;
+            $type        = 'trainer';
             $trainerId   = $user->id;
             $submittedBy = $user->id;
         }
 
-        $avgScore = collect($request->scores)->avg();
+        $scores = $request->input('scores', []);
+
+        if (empty($scores)) {
+            return back()->with('error', 'Please rate at least one question.');
+        }
+
+        $avgScore = collect($scores)->filter()->avg();
 
         $summary = BatchFbSummary::create([
             'batch_id'     => $request->batch_id,
@@ -69,25 +79,54 @@ class BatchFeedbackController extends Controller
             'remarks'      => $request->remarks,
         ]);
 
-        // 🔥 STORE QUESTION TEXT
-        foreach ($request->scores as $questionId => $score) {
+        /*
+    Fetch questions from default_feedbacks
+    */
 
-            $question = BatchFeedbackQuestion::find($questionId);
+        $questions = DefaultFeedback::whereIn('id', array_keys($scores))
+            ->get()
+            ->keyBy('id');
+
+        foreach ($scores as $questionId => $score) {
+
+            if (!$score || !isset($questions[$questionId])) {
+                continue;
+            }
+
+            $question = $questions[$questionId];
 
             BatchFbSubmissionDetail::create([
-                'summery_id' => $summary->id,
-                'question'   => $question->question,   // store TEXT
+                'summary_id' => $summary->id,
+                'category'   => $question->category,   // ✅ from default_feedbacks
+                'question'   => $question->question,
                 'score'      => $score,
             ]);
         }
 
-        return back()->with('success', 'Feedback submitted successfully.');
+        return back()->with('success', 'Feedback submitted successfully');
     }
 
-    public function questions($type)
+    /*
+    LOAD QUESTIONS BASED ON ROLE
+    */
+
+    public function questions()
     {
+        $user = Auth::user();
+
+        // If learner gives feedback → show trainer questions
+        if ($user->role === 'learner') {
+            $type = 'trainer';
+        }
+        // If trainer/admin gives feedback → show learner questions
+        else {
+            $type = 'learner';
+        }
+
         return response()->json(
-            BatchFeedbackQuestion::where('type', $type)->get()
+            BatchFeedbackQuestion::select('id', 'question', 'category')
+                ->where('type', $type)
+                ->get()
         );
     }
 
@@ -105,27 +144,27 @@ class BatchFeedbackController extends Controller
         );
     }
 
-    public function previous(Request $request)
-    {
-        $summary = BatchFbSummary::where('batch_id', $request->batch_id)
-            ->where('type', $request->type)
-            ->where('submitted_by', Auth::id())
-            ->with('details')
-            ->first();
+    // public function previous(Request $request)
+    // {
+    //     $summary = BatchFbSummary::where('batch_id', $request->batch_id)
+    //         ->where('type', $request->type)
+    //         ->where('submitted_by', Auth::id())
+    //         ->with('details')
+    //         ->first();
 
-        if (!$summary) {
-            return response()->json(null);
-        }
+    //     if (!$summary) {
+    //         return response()->json(null);
+    //     }
 
-        // Convert question text → array
-        $scores = [];
-        foreach ($summary->details as $detail) {
-            $scores[$detail->question] = $detail->score;
-        }
+    //     // Convert question text → array
+    //     $scores = [];
+    //     foreach ($summary->details as $detail) {
+    //         $scores[$detail->question] = $detail->score;
+    //     }
 
-        return response()->json([
-            'remarks' => $summary->remarks,
-            'scores'  => $scores,
-        ]);
-    }
+    //     return response()->json([
+    //         'remarks' => $summary->remarks,
+    //         'scores'  => $scores,
+    //     ]);
+    // }
 }

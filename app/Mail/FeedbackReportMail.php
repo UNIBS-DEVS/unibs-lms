@@ -18,16 +18,16 @@ class FeedbackReportMail extends TenantMailable implements ShouldQueue
     public $user;
     public string $type;
     public string $clientCode;
-    public ?string $batchName;
-    public ?string $feedbackType;
+    public string $batchName;
+    public string $feedbackType;
 
     public function __construct(
         array $summaries,
         $user,
         string $type,
-        $clientCode,
-        ?string $batchName = null,
-        ?string $feedbackType = null
+        string $clientCode,
+        string $batchName,
+        string $feedbackType
     ) {
 
         parent::__construct((string) $clientCode);
@@ -49,6 +49,24 @@ class FeedbackReportMail extends TenantMailable implements ShouldQueue
                 'user' => $this->user
             ]);
 
+        if ($this->type === 'pdf') {
+
+            $pdf = Pdf::loadView(
+                'reports.feedback.pdf',
+                [
+                    'summaries' => collect($this->summaries),
+                    'batchName' => $this->batchName,
+                    'feedbackType' => $this->feedbackType
+                ]
+            )->setPaper('a4', 'landscape');
+
+            $mail->attachData(
+                $pdf->output(),
+                'feedback-report.pdf',
+                ['mime' => 'application/pdf']
+            );
+        }
+
         if ($this->type === 'excel') {
 
             $excel = Excel::raw(
@@ -60,21 +78,6 @@ class FeedbackReportMail extends TenantMailable implements ShouldQueue
                 $excel,
                 'feedback-report.xlsx',
                 ['mime' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']
-            );
-        }
-
-        if ($this->type === 'pdf') {
-
-            $pdf = Pdf::loadView('reports.feedback.pdf', [
-                'summaries' => collect($this->summaries),
-                'batchName' => $this->batchName,
-                'feedbackType' => $this->feedbackType
-            ])->setPaper('a4', 'landscape');
-
-            $mail->attachData(
-                $pdf->output(),
-                'feedback-report.pdf',
-                ['mime' => 'application/pdf']
             );
         }
 

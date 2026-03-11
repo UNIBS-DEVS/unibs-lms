@@ -41,6 +41,6 @@ class BatchFbSummary extends Model
 
     public function details()
     {
-        return $this->hasMany(BatchFbSubmissionDetail::class, 'summery_id');
+        return $this->hasMany(BatchFbSubmissionDetail::class, 'summary_id');
     }
 }

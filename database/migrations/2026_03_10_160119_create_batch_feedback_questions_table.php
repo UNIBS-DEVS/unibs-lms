@@ -11,8 +11,18 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('feedback_summaries', function (Blueprint $table) {
+        Schema::create('batch_feedback_questions', function (Blueprint $table) {
             $table->id();
+
+            $table->foreignId('batch_id')
+                ->constrained()
+                ->cascadeOnDelete();
+
+            $table->text('question');
+
+            $table->enum('type', ['trainer', 'learner']);
+            $table->enum('category', ['regular', 'viva', 'need based']);
+
             $table->timestamps();
         });
     }
@@ -22,6 +32,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('feedback_summaries');
+        Schema::dropIfExists('batch_feedback_questions');
     }
 };

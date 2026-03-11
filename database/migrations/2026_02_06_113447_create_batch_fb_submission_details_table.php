@@ -14,9 +14,11 @@ return new class extends Migration
         Schema::create('batch_fb_submission_details', function (Blueprint $table) {
             $table->id();
 
-            $table->foreignId('summery_id')
+            $table->foreignId('summary_id')
                 ->constrained('batch_fb_summaries')
                 ->cascadeOnDelete();
+
+            $table->string('category')->nullable();
 
             $table->text('question');
             $table->unsignedTinyInteger('score'); // 1–5

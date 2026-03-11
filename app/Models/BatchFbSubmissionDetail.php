@@ -12,13 +12,14 @@ class BatchFbSubmissionDetail extends Model
     protected $table = 'batch_fb_submission_details';
 
     protected $fillable = [
-        'summery_id',
+        'summary_id',
+        'category',
         'question',
         'score',
     ];
 
     public function summary()
     {
-        return $this->belongsTo(BatchFbSummary::class, 'summery_id');
+        return $this->belongsTo(BatchFbSummary::class, 'summary_id');
     }
 }

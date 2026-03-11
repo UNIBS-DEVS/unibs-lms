@@ -44,37 +44,71 @@
                                 @enderror
                             </div>
 
-                            {{-- Type --}}
-                            <div class="mb-4 col-md-6">
-                                <label class="form-label fw-semibold">
-                                    Feedback Type <span class="text-danger">*</span>
-                                </label>
+                            {{-- Type + Category Row --}}
+                            <div class="row">
 
-                                <div class="input-group">
-                                    <span class="input-group-text bg-light">
-                                        <i class="fa fa-users"></i>
-                                    </span>
+                                {{-- Type --}}
+                                <div class="mb-4 col-md-6">
+                                    <label class="form-label fw-semibold">
+                                        Feedback Type <span class="text-danger">*</span>
+                                    </label>
 
-                                    <select name="type" class="form-select @error('type') is-invalid @enderror">
-                                        <option value="">-- Select Type --</option>
-                                        <option value="trainer"
-                                            {{ old('type', $question->type ?? '') === 'trainer' ? 'selected' : '' }}>
-                                            Trainer Feedback
-                                        </option>
-                                        <option value="learner"
-                                            {{ old('type', $question->type ?? '') === 'learner' ? 'selected' : '' }}>
-                                            Learner Feedback
-                                        </option>
-                                    </select>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light">
+                                            <i class="fa fa-users"></i>
+                                        </span>
 
-                                    @error('type')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
+                                        <select name="type" class="form-select @error('type') is-invalid @enderror">
+                                            <option value="">-- Select Type --</option>
+                                            <option value="trainer"
+                                                {{ old('type', $question->type ?? '') === 'trainer' ? 'selected' : '' }}>
+                                                Trainer Feedback
+                                            </option>
+                                            <option value="learner"
+                                                {{ old('type', $question->type ?? '') === 'learner' ? 'selected' : '' }}>
+                                                Learner Feedback
+                                            </option>
+                                        </select>
+
+                                        @error('type')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
                                 </div>
 
-                                @error('type')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
+                                {{-- Category --}}
+                                <div class="mb-4 col-md-6">
+                                    <label class="form-label fw-semibold">
+                                        Feedback Category <span class="text-danger">*</span>
+                                    </label>
+
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light">
+                                            <i class="fa fa-users"></i>
+                                        </span>
+
+                                        <select name="category" class="form-select @error('category') is-invalid @enderror">
+                                            <option value="">-- Select Category --</option>
+
+                                            <option value="regular" @selected(old('category', $question->category ?? '') === 'regular')>
+                                                Regular
+                                            </option>
+
+                                            <option value="viva" @selected(old('category', $question->category ?? '') === 'viva')>
+                                                Viva
+                                            </option>
+
+                                            <option value="need based" @selected(old('category', $question->category ?? '') === 'need based')>
+                                                Need Based
+                                            </option>
+
+                                        </select>
+
+                                        @error('category')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
                             </div>
 
                             {{-- Actions --}}
@@ -84,7 +118,7 @@
                                     <i class="fa-solid fa-arrow-left"></i>
                                 </a>
 
-                                <button class="btn btn-warning">
+                                <button class="btn btn-primary">
                                     <i class="fa fa-save me-1"></i>
                                     {{ isset($question) ? 'Update' : 'Save' }}
                                 </button>

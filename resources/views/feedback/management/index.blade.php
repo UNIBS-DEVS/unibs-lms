@@ -2,33 +2,10 @@
 
 @section('title', 'Default Feedback Questions | Unibs Tools')
 
-{{-- @push('styles')
-    <style>
-        #feedbackTable thead th {
-            background-color: #f8f9fa;
-            vertical-align: middle;
-            font-weight: 600;
-            white-space: nowrap;
-        }
 
-        #feedbackTable .filter-row th {
-            background-color: #ffffff;
-            padding: 6px;
-        }
-
-        .column-search {
-            border-radius: 6px;
-            font-size: 13px;
-        }
-
-        .dataTables_wrapper .dataTables_length {
-            margin-bottom: 20px;
-        }
-    </style>
-@endpush --}}
 
 @push('styles')
-    <style>
+    {{--  <style>
         /* DataTables top controls wrapper */
         .dataTables_wrapper .dataTables_filter,
         .dataTables_wrapper .dataTables_length {
@@ -94,7 +71,7 @@
             display: block;
             clear: both;
         }
-    </style>
+    </style> --}}
 @endpush
 
 
@@ -110,13 +87,14 @@
         </div>
 
         <div class="table-responsive">
-            <table class="table table-bordered table-hover align-middle bg-white shadow-sm w-100" id="feedbackTable">
+            <table class="table table-bordered table-hover align-middle bg-white shadow-sm w-100" id="listTable">
 
                 <thead>
                     <tr>
                         <th width="50">#</th>
                         <th>Question</th>
                         <th width="80" class="text-center">Type</th>
+                        <th width="80" class="text-center">Category</th>
                         <th width="100" class="text-center">Action</th>
                     </tr>
 
@@ -135,6 +113,10 @@
                                 <option value="trainer">Trainer</option>
                                 <option value="learner">Learner</option>
                             </select>
+                        </th>
+
+                        <th>
+                            <input type="text" class="form-control form-control-sm" placeholder="Category">
                         </th>
 
                         <th></th>
@@ -174,6 +156,7 @@
                                 </span>
                             </td>
 
+                            <td> <span class="badge bg-info text-dark">{{ ucfirst($fb->category) }}</span></td>
 
                             <td class="text-center">
                                 <a href="{{ route('feedback.trainer.edit', $fb) }}" class="btn btn-sm btn-outline-warning">
@@ -200,36 +183,36 @@
 
 @push('scripts')
     <script>
-        $(document).ready(function() {
+        // $(document).ready(function() {
 
-            let table = $('#feedbackTable').DataTable({
-                pageLength: 5,
-                lengthMenu: [5, 10, 25, 50],
-                pagingType: "simple_numbers",
-                language: {
-                    search: "",
-                    searchPlaceholder: "Search feedback...",
-                    lengthMenu: "Show _MENU_"
-                },
-                columnDefs: [{
-                        orderable: false,
-                        searchable: false,
-                        targets: 3
-                    } // Action column
-                ]
-            });
+        //     let table = $('#feedbackTable').DataTable({
+        //         pageLength: 5,
+        //         lengthMenu: [5, 10, 25, 50],
+        //         pagingType: "simple_numbers",
+        //         language: {
+        //             search: "",
+        //             searchPlaceholder: "Search feedback...",
+        //             lengthMenu: "Show _MENU_"
+        //         },
+        //         columnDefs: [{
+        //                 orderable: false,
+        //                 searchable: false,
+        //                 targets: 3
+        //             } // Action column
+        //         ]
+        //     });
 
-            // Question text filter
-            $('#feedbackTable thead tr.filter-row th:eq(1) input')
-                .on('keyup change', function() {
-                    table.column(1).search(this.value).draw();
-                });
+        //     // Question text filter
+        //     $('#feedbackTable thead tr.filter-row th:eq(1) input')
+        //         .on('keyup change', function() {
+        //             table.column(1).search(this.value).draw();
+        //         });
 
-            // Type dropdown filter
-            $('#feedbackTable thead tr.filter-row th:eq(2) select')
-                .on('change', function() {
-                    table.column(2).search(this.value).draw();
-                });
-        });
+        //     // Type dropdown filter
+        //     $('#feedbackTable thead tr.filter-row th:eq(2) select')
+        //         .on('change', function() {
+        //             table.column(2).search(this.value).draw();
+        //         });
+        // });
     </script>
 @endpush

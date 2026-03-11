@@ -203,7 +203,7 @@
                 class="sidebar-submenu {{ request()->routeIs('feedback.share.*') ? 'active' : '' }}"
                 style="padding-left:75px">
                 <i class="fa fa-paper-plane"></i>
-                <span>Share Feedbacks</span>
+                <span>Share Feedback</span>
             </a>
         @endif
 

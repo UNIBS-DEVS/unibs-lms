@@ -11,7 +11,7 @@
                 <div class="card shadow-sm border-0">
                     <div class="card-header bg-white border-bottom">
                         <h5 class="mb-0 fw-semibold">
-                            <i class="fa fa-comment-dots me-2 text-warning"></i>
+                            <i class="fa fa-comment-dots me-2 text-primary"></i>
                             Edit Feedback Question
                         </h5>
                     </div>
@@ -82,7 +82,7 @@
                                             <option value="viva" @selected(old('category', $feedback->category) === 'viva')>
                                                 Viva
                                             </option>
-                                            <option value="need_based" @selected(old('category', $feedback->category) === 'need_based')>
+                                            <option value="need based" @selected(old('category', $feedback->category) === 'need based')>
                                                 Need Based
                                             </option>
                                         </select>
@@ -101,7 +101,7 @@
                                     <i class="fa-solid fa-arrow-left"></i>
                                 </a>
 
-                                <button type="submit" class="btn btn-warning">
+                                <button type="submit" class="btn btn-primary">
                                     <i class="fa fa-save me-1"></i> Update
                                 </button>
                             </div>

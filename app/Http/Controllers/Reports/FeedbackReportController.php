@@ -2,44 +2,33 @@
 
 namespace App\Http\Controllers\Reports;
 
+use App\Exports\FeedbackReportExport;
 use App\Http\Controllers\Controller;
 use App\Mail\FeedbackReportMail;
 use App\Models\Batch;
+use App\Models\BatchFbSubmissionDetail;
 use App\Models\BatchFbSummary;
-use App\Models\DefaultFeedback;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Maatwebsite\Excel\Facades\Excel;
-use App\Exports\FeedbackReportExport;
 
 class FeedbackReportController extends Controller
 {
+
     public function index(Request $request)
     {
         $user = Auth::user();
+
         $batches = $this->getUserBatches($user);
 
-        $summaries = $this->filteredQuery($request)->get();
-
-        $summaryStats = [
-            'total' => $summaries->count(),
-            'trainer' => $summaries->where('type', 'trainer')->count(),
-            'learner' => $summaries->where('type', 'learner')->count(),
-            'average_score' => round($summaries->avg('avg_score') ?? 0, 2),
-        ];
-
-        // dd($request->all());
-        return view('reports.feedback.index', [
-            'batches' => $batches,
-            'summaries' => $summaries,
-            'summary' => $summaryStats,
-        ]);
+        // dd($user);
+        return view('reports.feedback.index', compact('batches'));
     }
 
     /**
-     * Base Filter Query
+     * Base Query for all filters
      */
     private function filteredQuery(Request $request)
     {
@@ -52,38 +41,24 @@ class FeedbackReportController extends Controller
             ]);
 
         if ($request->filled('batch_id')) {
-            $query->where('batch_id', (int) $request->batch_id);
+            $query->where('batch_id', $request->batch_id);
         }
 
         if ($request->filled('type')) {
             $query->where('type', $request->type);
         }
 
+        // dd($query);
         return $query->latest('created_at');
     }
 
+    /**
+     * AJAX Filter
+     */
     public function filter(Request $request)
     {
 
-        dd('jhug');
-
-        $query = BatchFbSummary::with([
-            'batch',
-            'trainer',
-            'learner',
-            'details'
-        ]);
-
-        if ($request->batch_id) {
-            $query->where('batch_id', $request->batch_id);
-        }
-
-        if ($request->type) {
-            $query->where('type', $request->type);
-        }
-
-        $summaries = $query->latest()->get();
-
+        $summaries = $this->filteredQuery($request)->get();
 
         $data = $summaries->map(function ($s) {
 
@@ -91,23 +66,18 @@ class FeedbackReportController extends Controller
                 ->pluck('category')
                 ->filter()
                 ->unique()
-                ->values();
+                ->values()
+                ->toArray();
 
             return [
-
+                'id' => $s->id,
                 'learner' => $s->learner->name ?? '-',
-
                 'trainer' => $s->trainer->name ?? '-',
-
                 'categories' => $categories,
-
-                'avg_score' => number_format($s->avg_score, 1),
-
+                'avg_score' => number_format($s->avg_score ?? 0, 1),
                 'date' => optional($s->created_at)->format('d M Y'),
-
             ];
         });
-
 
         return response()->json([
 
@@ -128,6 +98,9 @@ class FeedbackReportController extends Controller
         ]);
     }
 
+    /**
+     * Get User Batches
+     */
     private function getUserBatches($user)
     {
         if ($user->role === 'admin') {
@@ -135,7 +108,9 @@ class FeedbackReportController extends Controller
         }
 
         if ($user->role === 'trainer') {
+
             return Batch::whereHas('trainers', function ($q) use ($user) {
+
                 $q->where('trainer_id', $user->id);
             })->orderBy('name')->get();
         }
@@ -154,6 +129,8 @@ class FeedbackReportController extends Controller
 
         $summaries = $this->filteredQuery($request)->get();
 
+
+
         if ($summaries->isEmpty()) {
             return back()->with('error', 'No data available for export.');
         }
@@ -161,9 +138,12 @@ class FeedbackReportController extends Controller
         $batchName = $summaries->first()?->batch?->name ?? 'Batch';
         $feedbackType = $request->type;
 
+
         $clientCode = session('client_code');
+        // dd($clientCode);
 
         if (!empty($user->email)) {
+
             Mail::to($user->email)->later(
                 now()->addSeconds(5),
                 new FeedbackReportMail(
@@ -202,6 +182,7 @@ class FeedbackReportController extends Controller
         $clientCode = session('client_code');
 
         if (!empty($user->email)) {
+
             Mail::to($user->email)->later(
                 now()->addSeconds(5),
                 new FeedbackReportMail(
@@ -222,5 +203,19 @@ class FeedbackReportController extends Controller
         ])
             ->setPaper('a4', 'landscape')
             ->download('feedback-report-' . now()->format('Ymd-His') . '.pdf');
+    }
+
+    public function details($id)
+    {
+        $summary = BatchFbSummary::with('details')->findOrFail($id);
+
+        $details = $summary->details->map(function ($d) {
+            return [
+                'question' => $d->question,
+                'score' => $d->score
+            ];
+        });
+
+        return response()->json($details);
     }
 }

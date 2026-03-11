@@ -15,6 +15,13 @@ return new class extends Migration
             $table->id();
             $table->foreignId('batch_id')->constrained()->cascadeOnDelete();
 
+            $table->unsignedBigInteger('trainer_id');
+
+            $table->foreign('trainer_id')
+                ->references('id')
+                ->on('users')
+                ->cascadeOnDelete();
+
             $table->enum('type', ['trainer', 'learner']);
             $table->foreignId('submitted_by')->constrained('users')->cascadeOnDelete();
 

@@ -139,12 +139,13 @@ Route::middleware(['auth', 'tenant'])->group(function () {
     */
     Route::middleware(['role:admin,trainer'])->prefix('feedback')->name('feedback.')->group(function () {
 
-        Route::resource('trainer', DefaultFeedbackController::class)->parameters(['trainer' => 'feedback'])->except(['show']);
+        Route::resource('trainer', DefaultFeedbackController::class)
+            ->parameters(['trainer' => 'feedback'])
+            ->except(['show']);
 
-        Route::get('/feedback/share/previous', [BatchFeedbackController::class, 'previous'])->name('feedback.share.previous');
-        Route::get('/feedback/share/questions/{type}', [BatchFeedbackController::class, 'questions']);
-        Route::get('/feedback/share/trainers/{batch}', [BatchFeedbackController::class, 'trainers']);
-        Route::get('/feedback/share/learners/{batch}', [BatchFeedbackController::class, 'learners']);
+        Route::get('/share/trainers/{batch}', [BatchFeedbackController::class, 'trainers'])->name('share.trainers');
+
+        Route::get('/share/learners/{batch}', [BatchFeedbackController::class, 'learners'])->name('share.learners');
     });
 
     /*
@@ -160,7 +161,10 @@ Route::middleware(['auth', 'tenant'])->group(function () {
             Route::post('/', [BatchFeedbackController::class, 'store'])->name('store');
 
             Route::get('/learners/{batch}', [BatchFeedbackController::class, 'learners'])->name('feedback.share.learners');
+
             Route::get('/trainers/{batch}', [BatchFeedbackController::class, 'trainers'])->name('feedback.share.trainers');
+
+            Route::get('/questions', [BatchFeedbackController::class, 'questions'])->name('questions');
         });
     });
 
@@ -205,8 +209,14 @@ Route::middleware(['auth', 'tenant'])->group(function () {
         Route::get('feedback', [FeedbackReportController::class, 'index'])->name('feedback.index');
         Route::get('feedback/filter', [FeedbackReportController::class, 'filter'])
             ->name('feedback.filter');
+        Route::get('/feedback/details/{id}', [FeedbackReportController::class, 'details']);
         Route::get('feedback/excel', [FeedbackReportController::class, 'exportExcel'])->name('feedback.excel');
         Route::get('feedback/pdf', [FeedbackReportController::class, 'exportPdf'])->name('feedback.pdf');
+
+        Route::get(
+            'feedback/details/{id}',
+            [FeedbackReportController::class, 'details']
+        )->name('reports.feedback.details');
 
         Route::get('performance', [PerformanceReportController::class, 'index'])->name('performance.index');
         Route::get('performance/filter', [PerformanceReportController::class, 'filter'])->name('performance.filter');

@@ -36,7 +36,8 @@ class BatchFeedbackQuestionController extends Controller
 
         $batch->feedbackQuestions()->create($request->only([
             'question',
-            'type'
+            'type',
+            'category'
         ]));
 
         return redirect()
@@ -46,6 +47,7 @@ class BatchFeedbackQuestionController extends Controller
 
     public function edit(Batch $batch, BatchFeedbackQuestion $question)
     {
+        // dd($question);
         return view('batch-feedback-questions.edit', compact(
             'batch',
             'question'
@@ -61,7 +63,8 @@ class BatchFeedbackQuestionController extends Controller
 
         $question->update($request->only([
             'question',
-            'type'
+            'type',
+            'category'
         ]));
 
         return redirect()
@@ -80,6 +83,7 @@ class BatchFeedbackQuestionController extends Controller
     {
         $defaults = DefaultFeedback::all();
 
+        // dd($defaults);
         $inserted = 0;
 
         foreach ($defaults as $df) {
@@ -93,6 +97,7 @@ class BatchFeedbackQuestionController extends Controller
                 BatchFeedbackQuestion::create([
                     'batch_id' => $batch->id,
                     'question' => $df->question,
+                    'category' => $df->category,
                     'type'     => $df->type,
                 ]);
 
