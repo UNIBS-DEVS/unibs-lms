@@ -17,6 +17,7 @@ return new class extends Migration
             $table->foreignId('batch_id')->constrained()->cascadeOnDelete();
 
             $table->string('title');
+            
             $table->enum('quiz_type', ['daily', 'weekly', 'monthly', 'need based']);
 
             $table->unsignedTinyInteger('minimum_passing_percentage')->default(70);

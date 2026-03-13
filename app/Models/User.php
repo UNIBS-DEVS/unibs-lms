@@ -70,4 +70,17 @@ class User extends Authenticatable
             'batch_id'
         );
     }
+
+    public function batches()
+    {
+        if ($this->role === 'learner') {
+            return $this->learnerBatches();
+        }
+
+        if ($this->role === 'trainer') {
+            return $this->trainerBatches();
+        }
+
+        return Batch::query()->whereRaw('1=0');
+    }
 }

@@ -11,11 +11,13 @@ class QuizAttempt extends Model
     protected $fillable = [
         'quiz_id',
         'user_id',
+        'batch_id',
+        'batch_session_id',
         'score',
         'status',
         'started_at',
-        'time_limit_minutes',        // ✅ REQUIRED
         'completed_at',
+        'time_limit_minutes',        // ✅ REQUIRED
         'question_order',
     ];
 
@@ -25,7 +27,6 @@ class QuizAttempt extends Model
         'completed_at'   => 'datetime',
         'question_order' => 'array',
     ];
-
 
     /* ---------------- Relationships ---------------- */
 
@@ -39,9 +40,9 @@ class QuizAttempt extends Model
         return $this->belongsTo(Quiz::class);
     }
 
-    public function batch()
+    public function session()
     {
-        return $this->belongsTo(Batch::class, 'batch_id');
+        return $this->belongsTo(BatchSession::class, 'batch_session_id');
     }
 
     public function answers()
@@ -49,6 +50,16 @@ class QuizAttempt extends Model
         return $this->hasMany(QuizAttemptAnswer::class);
     }
 
+
+    public function result()
+    {
+        return $this->hasOne(QuizResult::class);
+    }
+
+    public function batch()
+    {
+        return $this->belongsTo(Batch::class, 'batch_id');
+    }
 
     public function markCompletedAuto()
     {
@@ -66,11 +77,6 @@ class QuizAttempt extends Model
         ]);
     }
 
-    public function result()
-    {
-        return $this->hasOne(QuizResult::class);
-    }
-
     /* ---------------- Status Helpers ---------------- */
 
     public function markInProgress()
@@ -84,19 +90,34 @@ class QuizAttempt extends Model
     /**
      * Auto-complete quiz (NO manual questions)
      */
-    public function finalizeScore(): void
+    public function finalizeScore()
     {
-        $total = $this->answers()
-            ->whereNotNull('marks_obtained')
-            ->sum('marks_obtained');
+        $score = $this->answers()->sum('marks_obtained');
 
         $this->update([
-            'score'        => max(0, $total),
-            'status'       => 'completed_auto',
-            'completed_at' => now(),
+            'score' => $score,
+            'status' => 'completed_auto',
+            'submitted_at' => now()
         ]);
-    }
 
+        $totalMarks = $this->quiz->totalMarks();
+
+        $percentage = $totalMarks > 0
+            ? ($score / $totalMarks) * 100
+            : 0;
+
+        QuizResult::updateOrCreate(
+            ['quiz_attempt_id' => $this->id],
+            [
+                'learner_id' => $this->user_id,
+                'total_marks' => $totalMarks,
+                'obtained_marks' => $score,
+                'percentage' => round($percentage, 2),
+                'result' => $percentage >= $this->quiz->minimum_passing_percentage ? 'pass' : 'fail',
+                'published_at' => now()
+            ]
+        );
+    }
     /**
      * Publish final result (AFTER manual review)
      */
@@ -110,6 +131,21 @@ class QuizAttempt extends Model
             'score'  => max(0, $total),
             'status' => 'result_published',
         ]);
+
+        $totalMarks = $this->quiz->totalMarks();
+        $percentage = $totalMarks ? ($total / $totalMarks) * 100 : 0;
+
+        QuizResult::updateOrCreate(
+            ['quiz_attempt_id' => $this->id],
+            [
+                'learner_id'     => $this->user_id,
+                'total_marks'    => $totalMarks,
+                'obtained_marks' => $total,
+                'percentage'     => round($percentage, 2),
+                'result'         => $percentage >= $this->quiz->minimum_passing_percentage ? 'pass' : 'fail',
+                'published_at'   => now()
+            ]
+        );
     }
 
     /* ---------------- Attempt Guards ---------------- */

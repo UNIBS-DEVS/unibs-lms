@@ -14,7 +14,7 @@ use App\Http\Controllers\Feedback\BatchFeedbackQuestionController;
 use App\Http\Controllers\Feedback\DefaultFeedbackController;
 use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\Quiz\QuizController;
-use App\Http\Controllers\QuizAttemptController;
+use App\Http\Controllers\Quiz\QuizAttemptController;
 use App\Http\Controllers\Reports\AttendanceReportController;
 use App\Http\Controllers\Reports\PerformanceReportController;
 use App\Http\Controllers\Reports\QuizReportController;

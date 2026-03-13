@@ -3,7 +3,6 @@
 
 <head>
     <meta charset="utf-8">
-
     <style>
         body {
             font-family: DejaVu Sans;
@@ -51,7 +50,6 @@
             font-size: 10px;
         }
     </style>
-
 </head>
 
 <body>
@@ -59,7 +57,7 @@
     <div class="header">
 
         <div class="logo">
-            <img src="{{ public_path('assets/images/company-logo.png') }}" height="60">
+            <img src="{{ base_path('public/assets/images/company-logo.png') }}" height="60">
         </div>
 
         <div class="title">
@@ -70,8 +68,7 @@
         <div class="clearfix"></div>
 
         <p>
-            <strong>Batch :</strong> {{ $batchName ?? 'All Batches' }}
-            |
+            <strong>Batch :</strong> {{ $batchName ?? 'All Batches' }} |
             <strong>Type :</strong> {{ $feedbackType ? ucfirst($feedbackType) : 'All' }}
         </p>
 
@@ -94,28 +91,38 @@
 
         <tbody>
 
+        <tbody>
+
             @forelse($summaries as $index => $s)
                 @php
-                    $categories = collect($s->details)->pluck('category')->filter()->unique()->implode(', ');
+                    $categories = collect($s['details'] ?? [])
+                        ->pluck('category')
+                        ->filter()
+                        ->unique()
+                        ->implode(', ');
+
+                    $avgScore = !empty($s['avg_score']) ? round(($s['avg_score'] / 5) * 100) . '%' : '-';
                 @endphp
 
                 <tr>
 
                     <td>{{ $index + 1 }}</td>
 
-                    <td>{{ $s->batch->name ?? '-' }}</td>
+                    <td>{{ $s['batch']['name'] ?? '-' }}</td>
 
-                    <td>{{ $s->learner->name ?? '-' }}</td>
+                    <td>{{ $s['learner']['name'] ?? '-' }}</td>
 
-                    <td>{{ $s->trainer->name ?? '-' }}</td>
+                    <td>{{ $s['trainer']['name'] ?? '-' }}</td>
 
-                    <td>{{ ucfirst($s->type ?? '-') }}</td>
+                    <td>{{ !empty($s['type']) ? ucfirst($s['type']) : '-' }}</td>
 
                     <td>{{ $categories ?: '-' }}</td>
 
-                    <td>{{ $s->avg_score ?? '-' }}</td>
+                    <td>{{ $avgScore ?? '-' }}</td>
 
-                    <td>{{ optional($s->created_at)->format('d-m-Y H:i') ?? '-' }}</td>
+                    <td>
+                        {{ !empty($s['created_at']) ? \Carbon\Carbon::parse($s['created_at'])->format('d-m-Y H:i') : '-' }}
+                    </td>
 
                 </tr>
 
@@ -125,6 +132,8 @@
                     <td colspan="8">No records found</td>
                 </tr>
             @endforelse
+
+        </tbody>
 
         </tbody>
 

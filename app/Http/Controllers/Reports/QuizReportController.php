@@ -36,8 +36,6 @@ class QuizReportController extends Controller
                 'result_published',
             ]);
 
-        // dd($query);
-
         if ($request->filled('batch_id')) {
             $query->whereHas('quiz', function ($q) use ($request) {
                 $q->where('batch_id', $request->batch_id);
@@ -64,6 +62,30 @@ class QuizReportController extends Controller
     }
 
     /**
+     * Combine retakes -> keep best attempt
+     */
+    private function getFinalAttempts(Request $request)
+    {
+        return $this->filteredQuery($request)
+            ->with([
+                'quiz.batch.trainers',
+                'quiz.questions',
+                'quiz',
+                'user'
+            ])
+            ->get()
+            ->groupBy(function ($attempt) {
+                return $attempt->quiz_id . '_' . $attempt->user_id;
+            })
+            ->map(function ($group) {
+
+                // Choose BEST score attempt
+                return $group->sortByDesc('score')->first();
+            })
+            ->values();
+    }
+
+    /**
      * AJAX Filter
      */
     public function filter(Request $request)
@@ -73,15 +95,7 @@ class QuizReportController extends Controller
             'quiz_id' => 'required'
         ]);
 
-        $attempts = $this->filteredQuery($request)
-            ->with([
-                'quiz.batch.trainers',
-                'quiz.questions',
-                'quiz',
-                'user'
-            ])
-            ->latest('started_at')
-            ->get();
+        $attempts = $this->getFinalAttempts($request);
 
         $summary = [
             'total' => $attempts->count(),
@@ -96,6 +110,7 @@ class QuizReportController extends Controller
         ];
 
         $data = $attempts->map(function ($attempt) {
+
             $trainer = optional(
                 optional($attempt->quiz?->batch)
                     ->trainers
@@ -129,14 +144,7 @@ class QuizReportController extends Controller
     {
         $user = Auth::user();
 
-        $attempts = $this->filteredQuery($request)
-            ->with([
-                'quiz.batch.trainers',
-                'quiz.questions',
-                'quiz',
-                'user'
-            ])
-            ->get();
+        $attempts = $this->getFinalAttempts($request);
 
         if ($attempts->isEmpty()) {
             return back()->with('error', 'No data available for export.');
@@ -174,14 +182,7 @@ class QuizReportController extends Controller
     {
         $user = Auth::user();
 
-        $attempts = $this->filteredQuery($request)
-            ->with([
-                'quiz.batch.trainers',
-                'quiz.questions',
-                'quiz',
-                'user'
-            ])
-            ->get();
+        $attempts = $this->getFinalAttempts($request);
 
         if ($attempts->isEmpty()) {
             return back()->with('error', 'No data available.');

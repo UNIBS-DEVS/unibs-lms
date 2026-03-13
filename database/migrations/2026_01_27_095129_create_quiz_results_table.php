@@ -6,18 +6,21 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('quiz_results', function (Blueprint $table) {
+
             $table->id();
 
             $table->foreignId('quiz_attempt_id')
                 ->constrained()
                 ->cascadeOnDelete()
-                ->unique(); // 1 result per attempt
+                ->unique(); // one result per attempt
+
+            // FIXED HERE
+            $table->foreignId('learner_id')
+                ->constrained('users')
+                ->cascadeOnDelete();
 
             $table->decimal('total_marks', 6, 2);
             $table->decimal('obtained_marks', 6, 2);
@@ -31,9 +34,6 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('quiz_results');

@@ -19,20 +19,27 @@ class FeedbackReportExport implements FromCollection, WithHeadings
     {
         return $this->data->map(function ($row) {
 
-            $categories = collect($row->details)
+            $categories = collect($row['details'] ?? [])
                 ->pluck('category')
                 ->filter()
                 ->unique()
                 ->implode(', ');
 
+            // convert avg score to percentage
+            $avgScore = !empty($row['avg_score'])
+                ? round(($row['avg_score'] / 5) * 100, 2) . '%'
+                : '-';
+
             return [
-                'Batch' => $row->batch->name ?? '-',
-                'Learner' => $row->learner->name ?? '-',
-                'Trainer' => $row->trainer->name ?? '-',
-                'Type' => ucfirst($row->type ?? '-'),
-                'Category' => $categories ?: '-',
-                'Avg Score' => $row->avg_score ?? '-',
-                'Date' => optional($row->created_at)->format('d-m-Y H:i') ?? '-'
+                'Batch'      => $row['batch']['name'] ?? '-',
+                'Learner'    => $row['learner']['name'] ?? '-',
+                'Trainer'    => $row['trainer']['name'] ?? '-',
+                'Type'       => !empty($row['type']) ? ucfirst($row['type']) : '-',
+                'Category'   => $categories ?: '-',
+                'Avg Score'  => $avgScore,
+                'Date'       => !empty($row['created_at'])
+                    ? \Carbon\Carbon::parse($row['created_at'])->format('d-m-Y H:i')
+                    : '-',
             ];
         });
     }
@@ -46,7 +53,7 @@ class FeedbackReportExport implements FromCollection, WithHeadings
             'Type',
             'Category',
             'Avg Score',
-            'Date'
+            'Date',
         ];
     }
 }

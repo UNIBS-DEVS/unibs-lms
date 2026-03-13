@@ -6,7 +6,6 @@ use App\Exports\FeedbackReportExport;
 use App\Http\Controllers\Controller;
 use App\Mail\FeedbackReportMail;
 use App\Models\Batch;
-use App\Models\BatchFbSubmissionDetail;
 use App\Models\BatchFbSummary;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;

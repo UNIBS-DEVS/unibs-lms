@@ -80,16 +80,6 @@ class Batch extends Model
         );
     }
 
-    public function course()
-    {
-        return $this->belongsToMany(
-            Course::class,
-            'batch_courses',
-            'batch_id',
-            'course_id'
-        )->limit(1); // optional: only get one
-    }
-
     public function customer()
     {
         return $this->belongsTo(User::class, 'customer_id');

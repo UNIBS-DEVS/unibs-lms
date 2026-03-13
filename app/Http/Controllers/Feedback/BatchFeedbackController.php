@@ -59,7 +59,7 @@ class BatchFeedbackController extends Controller
 
             $type        = 'trainer';
             $trainerId   = $user->id;
-            $submittedBy = $user->id;
+            $submittedBy = $request->learner_id;
         }
 
         $scores = $request->input('scores', []);

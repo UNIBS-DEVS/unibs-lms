@@ -1,16 +1,17 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Quiz;
 
-use App\Models\Quiz;
+use App\Http\Controllers\Controller;
 use App\Models\Batch;
-use App\Models\QuizAttempt;
-use Illuminate\Support\Str;
-use Illuminate\Http\Request;
-use App\Models\QuizAttemptAnswer;
 use App\Models\FileQuestionSetting;
+use App\Models\Quiz;
+use App\Models\QuizAttempt;
+use App\Models\QuizAttemptAnswer;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 class QuizAttemptController extends Controller
 {
@@ -67,16 +68,13 @@ class QuizAttemptController extends Controller
             $attempt = QuizAttempt::create([
                 'user_id' => $user->id,
                 'quiz_id' => $quiz->id,
+                'batch_id' => $quiz->batch_id,
+                'batch_session_id' => $quiz->batch_session_id, // ✅ ADD
                 'status' => 'in_progress',
                 'started_at' => now(),
                 'question_order' => $questionIds,
             ]);
         }
-
-        // return redirect()->route('quiz.question.show', [
-        //     'attempt' => $attempt->id,
-        //     'number' => 1,
-        // ]);
 
         return redirect()->route('quiz.question.show', [
             'attempt' => $attempt->id,

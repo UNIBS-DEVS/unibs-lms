@@ -59,4 +59,9 @@ class Quiz extends Model
     {
         return (int) $this->questions()->sum('max_marks');
     }
+
+    public function session()
+    {
+        return $this->belongsTo(BatchSession::class, 'batch_session_id');
+    }
 }

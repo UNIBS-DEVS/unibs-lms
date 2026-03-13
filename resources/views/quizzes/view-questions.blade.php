@@ -25,7 +25,6 @@
     </style>
 @endpush
 
-
 @section('content')
     <div class="container-fluid">
 
@@ -33,7 +32,7 @@
             <div class="mb-3">
                 <h4>{{ $quiz->title }} – Questions</h4>
                 <span class="badge bg-info me-2">
-                    Course: {{ $quiz->batch?->course?->name ?? '-' }}
+                    Course: {{ $course?->name ?? '-' }}
                 </span>
 
                 <span class="badge bg-secondary">

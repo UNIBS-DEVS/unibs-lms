@@ -19,6 +19,7 @@ class QuizController extends Controller
             ->withCount('questions')
             ->latest()
             ->get();
+            
 
         return view('quizzes.index', compact('quizzes'));
     }
@@ -226,17 +227,19 @@ class QuizController extends Controller
 
         return redirect()->route('quizzes.index')
             ->with('success', 'Questions added to quiz successfully.');
-    }
+    } 
 
     public function viewQuestions(Quiz $quiz)
     {
-        $quiz->load('batch.courses'); // ✅ fixed
+        $quiz->load('batch.courses');
+
+        $course = $quiz->batch?->courses->first();
 
         $questions = $quiz->questions()
             ->with(['topic', 'options'])
             ->latest()
             ->paginate(10);
 
-        return view('quizzes.view-questions', compact('quiz', 'questions'));
+        return view('quizzes.view-questions', compact('quiz', 'questions', 'course'));
     }
 }
