@@ -178,19 +178,19 @@
                             <td>${item.learner_name}</td>
 
                             <td class="text-center">
-                                ${item.attendance.toFixed(2)}
+                                ${item.attendance.toFixed(2)}%
                             </td>
 
                             <td class="text-center">
-                                ${item.quiz.toFixed(2)}
+                                ${item.quiz.toFixed(2)}%
                             </td>
 
                             <td class="text-center">
-                                ${item.feedback.toFixed(2)}
+                                ${item.feedback.toFixed(2)}%
                             </td>
 
                             <td class="text-center fw-bold">
-                                ${item.avg_score.toFixed(2)}
+                                ${item.avg_score.toFixed(2)}%
                             </td>
 
                             <td class="text-center">
@@ -215,11 +215,15 @@
 
 
                         /* SUMMARY */
+                        // $('#summary-attendance').text(res.summary.attendance.toFixed(2));
+                        // $('#summary-quiz').text(res.summary.quiz.toFixed(2));
+                        // $('#summary-feedback').text(res.summary.feedback.toFixed(2));
+                        // $('#summary-score').text(res.summary.avg_score.toFixed(2));
 
-                        $('#summary-attendance').text(res.summary.attendance.toFixed(2));
-                        $('#summary-quiz').text(res.summary.quiz.toFixed(2));
-                        $('#summary-feedback').text(res.summary.feedback.toFixed(2));
-                        $('#summary-score').text(res.summary.avg_score.toFixed(2));
+                        $('#summary-attendance').text(res.summary.attendance.toFixed(2) + '%');
+                        $('#summary-quiz').text(res.summary.quiz.toFixed(2) + '%');
+                        $('#summary-feedback').text(res.summary.feedback.toFixed(2) + '%');
+                        $('#summary-score').text(res.summary.avg_score.toFixed(2) + '%');
 
                     },
 

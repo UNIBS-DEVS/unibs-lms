@@ -106,12 +106,15 @@ class PerformanceReportController extends Controller
             }
 
 
+            $attendancePercent = round(($attendanceScore / 5) * 100, 2);
+            $feedbackPercent   = round(($feedbackScore / 5) * 100, 2);
+
             $data[] = [
                 'learner_name' => $learner->name,
-                'attendance' => $attendanceScore,
-                'quiz' => $quizScore,
-                'feedback' => $feedbackScore,
-                'avg_score' => $finalScore,
+                'attendance' => $attendancePercent,
+                'quiz' => round($quizScore, 2),
+                'feedback' => $feedbackPercent,
+                'avg_score' => round($finalScore, 2),
                 'status' => $status
             ];
         }
