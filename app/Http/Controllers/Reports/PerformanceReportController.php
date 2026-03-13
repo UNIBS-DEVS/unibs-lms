@@ -77,10 +77,18 @@ class PerformanceReportController extends Controller
                STEP 4 : FINAL PERFORMANCE
             ================================================== */
 
+            /* ==================================================
+            STEP 4 : FINAL PERFORMANCE
+         ================================================== */
+
+            /* convert attendance & feedback to percentage */
+            $attendancePercent = ($attendanceScore / 5) * 100;
+            $feedbackPercent   = ($feedbackScore / 5) * 100;
+
             $finalScore =
-                ($attendanceScore * $batch->attendance_percentage / 100) +
+                ($attendancePercent * $batch->attendance_percentage / 100) +
                 ($quizScore * $batch->quiz_percentage / 100) +
-                ($feedbackScore * $batch->feedback_percentage / 100);
+                ($feedbackPercent * $batch->feedback_percentage / 100);
 
             $finalScore = round($finalScore, 2);
 
