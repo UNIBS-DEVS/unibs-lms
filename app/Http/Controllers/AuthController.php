@@ -25,7 +25,7 @@ class AuthController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | STEP 1: Fetch client from MASTER DB
+        | STEP 1: Fetch client from LMS MASTER DB
         |--------------------------------------------------------------------------
         */
         $client = DB::connection('lms')

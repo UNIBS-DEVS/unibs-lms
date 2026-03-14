@@ -218,8 +218,13 @@ Route::middleware(['auth', 'tenant'])->group(function () {
             [FeedbackReportController::class, 'details']
         )->name('reports.feedback.details');
 
+
         Route::get('performance', [PerformanceReportController::class, 'index'])->name('performance.index');
         Route::get('performance/filter', [PerformanceReportController::class, 'filter'])->name('performance.filter');
+
+        Route::get('performance/excel', [PerformanceReportController::class, 'exportExcel'])->name('performance.excel');
+
+        Route::get('performance/pdf', [PerformanceReportController::class, 'exportPdf'])->name('performance.pdf');
     });
 
     /*

@@ -3,8 +3,29 @@
 @section('content')
     <div class="container-fluid">
 
-        <h4 class="mb-4">Performance Report</h4>
 
+        {{-- FLASH MESSAGE --}}
+        @if (session('success'))
+            <div class="alert alert-success alert-dismissible fade show">
+                {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
+
+        {{-- PAGE TITLE --}}
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="mb-0">Performance Report</h4>
+
+            <div class="d-flex gap-2">
+                <a href="{{ route('reports.performance.excel') }}" id="exportExcel" class="btn btn-success btn-sm">
+                    <i class="fa fa-file-excel"></i> Excel
+                </a>
+
+                <a href="{{ route('reports.performance.pdf') }}" id="exportPdf" class="btn btn-danger btn-sm">
+                    <i class="fa fa-file-pdf"></i> PDF
+                </a>
+            </div>
+        </div>
         {{-- FILTERS --}}
         <div class="card mb-4 shadow-sm border-0">
             <div class="card-body">
@@ -153,6 +174,21 @@
 
                     success: function(res) {
 
+                        /* UPDATE EXPORT BUTTON LINKS */
+                        let params = $('#filterForm').serialize();
+
+                        // alert(params);
+
+                        $('#exportExcel').attr(
+                            'href',
+                            "{{ route('reports.performance.excel') }}?" + params
+                        );
+
+                        $('#exportPdf').attr(
+                            'href',
+                            "{{ route('reports.performance.pdf') }}?" + params
+                        );
+
                         let rows = '';
                         let index = 1;
 
@@ -245,6 +281,10 @@
 
 
             $('select[name="batch_id"]').change(loadPerformance);
+
+            $('input[name="start_date"]').change(loadPerformance);
+
+            $('input[name="end_date"]').change(loadPerformance);
 
 
         });

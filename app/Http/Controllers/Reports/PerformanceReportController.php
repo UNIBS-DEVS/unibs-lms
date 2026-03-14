@@ -2,13 +2,21 @@
 
 namespace App\Http\Controllers\Reports;
 
+use App\Exports\PerformanceReportExport;
 use App\Http\Controllers\Controller;
+use App\Mail\AttendanceReportMail;
+use App\Mail\PerformanceReportMail;
 use App\Models\Batch;
 use App\Models\BatchFbSummary;
 use App\Models\BatchSession;
 use App\Models\QuizAttempt;
 use App\Models\QuizResult;
+use App\Models\User;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+use Maatwebsite\Excel\Facades\Excel;
 
 class PerformanceReportController extends Controller
 {
@@ -55,31 +63,21 @@ class PerformanceReportController extends Controller
 
             $attendanceScore = $this->calculateAttendance($learner->id, $sessions, $batch);
 
-
             /* ==================================================
-               STEP 2 : QUIZ SCORE
+                STEP 2 : QUIZ SCORE
             ================================================== */
 
             $quizScore = $this->calculateQuiz($learner->id, $batch_id);
 
-
-
-
             /* ==================================================
-               STEP 3 : FEEDBACK SCORE
+                STEP 3 : FEEDBACK SCORE
             ================================================== */
 
             $feedbackScore = $this->calculateFeedback($learner->id, $batch_id);
 
-
-
             /* ==================================================
-               STEP 4 : FINAL PERFORMANCE
+                STEP 4 : FINAL PERFORMANCE
             ================================================== */
-
-            /* ==================================================
-            STEP 4 : FINAL PERFORMANCE
-         ================================================== */
 
             /* convert attendance & feedback to percentage */
             $attendancePercent = ($attendanceScore / 5) * 100;
@@ -91,7 +89,6 @@ class PerformanceReportController extends Controller
                 ($feedbackPercent * $batch->feedback_percentage / 100);
 
             $finalScore = round($finalScore, 2);
-
 
             /* ==================================================
                STATUS
@@ -105,7 +102,6 @@ class PerformanceReportController extends Controller
                 $status = "Red";
             }
 
-
             $attendancePercent = round(($attendanceScore / 5) * 100, 2);
             $feedbackPercent   = round(($feedbackScore / 5) * 100, 2);
 
@@ -118,7 +114,6 @@ class PerformanceReportController extends Controller
                 'status' => $status
             ];
         }
-
 
         /* ==================================================
            SUMMARY
@@ -138,7 +133,6 @@ class PerformanceReportController extends Controller
             'summary' => $summary
         ]);
     }
-
 
     /* ==================================================
        ATTENDANCE FUNCTION
@@ -179,7 +173,6 @@ class PerformanceReportController extends Controller
             : 0;
     }
 
-
     /* ==================================================
        QUIZ FUNCTION (BEST ATTEMPT)
     ================================================== */
@@ -216,5 +209,143 @@ class PerformanceReportController extends Controller
         }
 
         return round($feedbacks->avg(), 2);
+    }
+
+    public function exportExcel(Request $request)
+    {
+        $user = Auth::user();
+
+        $learners = User::where('role', 'learner')
+            ->whereHas('learnerBatches', function ($q) use ($request) {
+                $q->where('batch_id', $request->batch_id);
+            })
+            ->get();
+
+        $data = $learners->map(function ($learner) {
+
+            $attendance = 100;
+            $quiz = 100;
+            $feedback = 100;
+
+            $avg = ($attendance + $quiz + $feedback) / 3;
+
+            return [
+                'learner' => $learner->name,
+                'attendance' => $attendance,
+                'quiz' => $quiz,
+                'feedback' => $feedback,
+                'avg_score' => $avg,
+                'status' => $avg >= 80 ? 'Green' : 'Red'
+            ];
+        });
+
+        /* Batch Name */
+        $batchName = null;
+
+        if ($request->filled('batch_id')) {
+            $batch = Batch::find($request->batch_id);
+            $batchName = $batch?->name;
+        }
+
+        /* Date Range */
+        $startDate = $request->filled('start_date') ? $request->start_date : '-';
+        $endDate   = $request->filled('end_date') ? $request->end_date : '-';
+
+        /* Tenant Client Code */
+        $clientCode = session('client_code');
+
+        /* Send Email */
+        if (!empty($user->email)) {
+
+            Mail::to($user->email)->later(
+                now()->addSeconds(5),
+                new PerformanceReportMail(
+                    $data->toArray(),
+                    $user,
+                    'excel',
+                    $batchName,
+                    $startDate,
+                    $endDate,
+                    $clientCode
+                )
+            );
+        }
+
+        /* Download Excel */
+        return Excel::download(
+            new PerformanceReportExport($data, $batchName, $startDate, $endDate),
+            'Performance Report-' . now()->format('Ymd-His') . '.xlsx'
+        );
+    }
+
+    public function exportPdf(Request $request)
+    {
+        $user = Auth::user();
+
+        $learners = User::where('role', 'learner')
+            ->whereHas('learnerBatches', function ($q) use ($request) {
+                $q->where('batch_id', $request->batch_id);
+            })
+            ->get();
+
+        $data = $learners->map(function ($learner) {
+
+            $attendance = 100;
+            $quiz = 100;
+            $feedback = 100;
+
+            $avg = ($attendance + $quiz + $feedback) / 3;
+
+            return [
+                'learner' => $learner->name,
+                'attendance' => $attendance,
+                'quiz' => $quiz,
+                'feedback' => $feedback,
+                'avg_score' => $avg,
+                'status' => $avg >= 80 ? 'Green' : 'Red'
+            ];
+        });
+
+        /* Batch Name */
+        $batchName = null;
+
+        if ($request->filled('batch_id')) {
+            $batch = Batch::find($request->batch_id);
+            $batchName = $batch?->name;
+        }
+
+        /* Date Range */
+        $startDate = $request->filled('start_date') ? $request->start_date : '-';
+        $endDate   = $request->filled('end_date') ? $request->end_date : '-';
+
+        /* Tenant Client Code */
+        $clientCode = session('client_code');
+
+        /* Send Email */
+        if (!empty($user->email)) {
+
+            Mail::to($user->email)->later(
+                now()->addSeconds(5),
+                new PerformanceReportMail(
+                    $data->toArray(),
+                    $user,
+                    'pdf',
+                    $batchName,
+                    $startDate,
+                    $endDate,
+                    $clientCode
+                )
+            );
+        }
+
+        /* Download PDF */
+        return Pdf::loadView('reports.performance.pdf', [
+            'performances' => $data,
+            'batchName' => $batchName,
+            'startDate' => $startDate,
+            'endDate' => $endDate
+        ])
+            ->setPaper('a4', 'landscape')
+            ->download('Performance Report-' . now()->format('Ymd-His') . '.pdf');
     }
 }
