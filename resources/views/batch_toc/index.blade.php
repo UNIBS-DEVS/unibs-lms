@@ -9,13 +9,15 @@
         <h3 class="mb-0">{{ $batch->name }} TOC</h3>
 
         <div class="d-flex gap-2">
-            <a href="{{ route('batches.index') }}" class="btn btn-secondary">
+            <a href="{{ route('dashboard.index') }}" class="btn btn-secondary">
                 <i class="fa-solid fa-arrow-left"></i>
             </a>
 
-            <a href="{{ route('batches.toc.create', $batch->id) }}" class="btn btn-primary">
-                <i class="fa-solid fa-plus"></i>
-            </a>
+            @if (in_array(auth()->user()->role, ['admin', 'trainer']))
+                <a href="{{ route('batches.toc.create', $batch->id) }}" class="btn btn-primary">
+                    <i class="fa-solid fa-plus"></i>
+                </a>
+            @endif
         </div>
     </div>
 
@@ -97,21 +99,29 @@
                             </span>
                         </td>
 
-                        <td class="text-center">
-                            <a href="{{ route('batches.toc.edit', [$batch->id, $item->id]) }}"
-                                class="btn btn-outline-warning btn-sm">
-                                <i class="fa fa-pen"></i>
-                            </a>
+                        @if (in_array(auth()->user()->role, ['admin', 'trainer']))
+                            <td class="text-center">
+                                <a href="{{ route('batches.toc.edit', [$batch->id, $item->id]) }}"
+                                    class="btn btn-outline-warning btn-sm">
+                                    <i class="fa fa-pen"></i>
+                                </a>
 
-                            <form action="{{ route('batches.toc.destroy', [$batch->id, $item->id]) }}" method="POST"
-                                class="d-inline" onsubmit="return confirm('Delete this TOC entry?')">
-                                @csrf
-                                @method('DELETE')
-                                <button class="btn btn-outline-danger btn-sm">
-                                    <i class="fa fa-trash"></i>
-                                </button>
-                            </form>
-                        </td>
+                                <form action="{{ route('batches.toc.destroy', [$batch->id, $item->id]) }}" method="POST"
+                                    class="d-inline" onsubmit="return confirm('Delete this TOC entry?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button class="btn btn-outline-danger btn-sm">
+                                        <i class="fa fa-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        @else
+                            <td class="text-center">
+                                <a href="{{ route('progress.index') }}" class="btn btn-primary btn-sm">
+                                    <i class="fa fa-chart-line"></i>
+                                </a>
+                            </td>
+                        @endif
                     </tr>
                 @endforeach
 

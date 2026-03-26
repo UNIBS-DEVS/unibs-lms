@@ -58,13 +58,57 @@ Route::middleware(['auth', 'tenant'])->group(function () {
         Route::resource('users', UserController::class);
         Route::resource('courses', CourseController::class);
         Route::resource('courses.topics', CourseTopicController::class);
-        Route::resource('batches', BatchController::class);
-        Route::resource('batches.toc', BatchTocController::class);
+
+        // Admin full BATCHES access (except view)
+        Route::resource('batches', BatchController::class)->except(['index', 'show']);
+
+        // Admin full TOC access (except view)
+        Route::resource('batches.toc', BatchTocController::class)->except(['index', 'show']);
+
         Route::resource('batch-courses', BatchCourseController::class);
         Route::resource('batch-trainers', BatchTrainerController::class);
         Route::resource('batch-learners', BatchLearnerController::class);
     });
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | VIEW ACCESS (ADMIN + TRAINER + LEARNER)
+    |--------------------------------------------------------------------------
+    */
+    Route::middleware('role:admin,trainer,learner')->group(function () {
+
+        // BATCHES
+        Route::get('batches', [BatchController::class, 'index'])->name('batches.index');
+        Route::get('batches/{batch}', [BatchController::class, 'show'])->name('batches.show');
+
+        // BATCH TOC
+        Route::get('batches/{batch}/toc', [BatchTocController::class, 'index'])
+            ->name('batches.toc.index');
+
+        Route::get('batches/{batch}/toc/{toc}', [BatchTocController::class, 'show'])
+            ->name('batches.toc.show');
+
+        // BATCH PROGRESS 
+        Route::get('progress', [BatchTocController::class, 'progressIndex'])
+            ->name('progress.index');
+    });
+
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | BATCH PROGRESS (VIEW FOR ALL, EDIT ONLY ADMIN/TRAINER)
+    |--------------------------------------------------------------------------
+    */
+    // Edit only for admin/trainer
+    Route::middleware('role:admin,trainer')->group(function () {
+        Route::get('progress/{batch}/{toc}/edit', [BatchTocController::class, 'progressEdit'])
+            ->name('progress.edit');
+
+        Route::put('progress/{batch}/{toc}', [BatchTocController::class, 'progressUpdate'])
+            ->name('progress.update');
+    });
     /*
     |--------------------------------------------------------------------------
     | ADMIN + TRAINER
@@ -225,17 +269,5 @@ Route::middleware(['auth', 'tenant'])->group(function () {
         Route::get('performance/excel', [PerformanceReportController::class, 'exportExcel'])->name('performance.excel');
 
         Route::get('performance/pdf', [PerformanceReportController::class, 'exportPdf'])->name('performance.pdf');
-    });
-
-    /*
-    |--------------------------------------------------------------------------
-    | BATCH PROGRESS
-    |--------------------------------------------------------------------------
-    */
-    Route::middleware(['role:admin,trainer'])->group(function () {
-
-        Route::get('progress', [BatchTocController::class, 'progressIndex'])->name('progress.index');
-        Route::get('progress/{batch}/{toc}/edit', [BatchTocController::class, 'progressEdit'])->name('progress.edit');
-        Route::put('progress/{batch}/{toc}', [BatchTocController::class, 'progressUpdate'])->name('progress.update');
     });
 });

@@ -38,7 +38,12 @@
                             <th>Planned End</th>
                             <th>Status</th>
                             <th width="120">Progress</th>
-                            <th width="100">Action</th>
+
+                            @if (auth()->user()->role === 'learner')
+                            @else
+                                <th width="100">Action</th>
+                            @endif
+
                         </tr>
                     </thead>
                     <tbody id="tocTableBody">
@@ -97,6 +102,7 @@
                     let status = toc.status.replace('_', ' ');
                     status = status.charAt(0).toUpperCase() + status.slice(1);
 
+                    let isLearner = "{{ auth()->user()->role }}" === 'learner';
                     tbody.append(`
                     <tr>
                         <td class="text-center">${toc.title}</td>
@@ -104,12 +110,15 @@
                         <td class="text-center">${toc.plan_end_date}</td>
                         <td class="text-center"><span class="badge bg-info">${status}</span></td>
                         <td class="text-center">${toc.percentage ?? 0}%</td>
-                        <td class="text-center">
-                            <a href="/progress/${batchId}/${toc.id}/edit"
-                               class="btn btn-sm btn-warning">
-                                <i class="fa fa-pen"></i>
-                            </a>
-                        </td>
+                       
+                        ${!isLearner ? `<td class="text-center">
+                                                                    <a href="/progress/${batchId}/${toc.id}/edit"
+                                                                        class="btn btn-sm btn-warning">
+                                                                        <i class="fa fa-pen"></i>
+                                                                    </a>
+                                                                ` : `
+                                                                </td>
+                                                            `} 
                     </tr>
                 `);
                 });

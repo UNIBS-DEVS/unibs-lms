@@ -12,15 +12,21 @@
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h4 class="mb-0">Batch Details</h4>
 
-                    <div>
-                        <a href="{{ route('batches.edit', $batch->id) }}" class="btn btn-warning">
-                            <i class="fa fa-edit"></i>
-                        </a>
+                    @if (in_array(auth()->user()->role, ['admin', 'trainer']))
+                        <div>
+                            <a href="{{ route('batches.edit', $batch->id) }}" class="btn btn-warning">
+                                <i class="fa fa-edit"></i>
+                            </a>
 
-                        <a href="{{ route('batches.index') }}" class="btn btn-secondary">
+                            <a href="{{ route('batches.index') }}" class="btn btn-secondary">
+                                <i class="fa fa-arrow-left"></i>
+                            </a>
+                        </div>
+                    @else
+                        <a href="{{ route('dashboard.index') }}" class="btn btn-secondary">
                             <i class="fa fa-arrow-left"></i>
                         </a>
-                    </div>
+                    @endif
                 </div>
 
                 {{-- Card --}}

@@ -11,11 +11,32 @@ use Illuminate\Support\Facades\Auth;
 
 class BatchTocController extends Controller
 {
+    // public function index(Batch $batch)
+    // {
+    //     $tocs = $batch->tocs()->orderBy('plan_start_date')->get();
+    //     return view('batch_toc.index', compact('batch', 'tocs'));
+    // }
+
+
     public function index(Batch $batch)
     {
+        $user = auth()->user();
+
+        if ($user->role === 'learner') {
+            $isAssigned = \App\Models\Batch::where('id', $batch->id)
+                ->whereHas('learners', function ($q) use ($user) {
+                    $q->where('users.id', $user->id);
+                })->exists();
+
+            if (!$isAssigned) {
+                abort(403, 'Unauthorized batch access');
+            }
+        }
+
         $tocs = $batch->tocs()->orderBy('plan_start_date')->get();
         return view('batch_toc.index', compact('batch', 'tocs'));
     }
+
 
     public function create(Batch $batch)
     {
@@ -99,19 +120,36 @@ class BatchTocController extends Controller
     }
 
     // Progress list page
+    // public function progressIndex()
+    // {
+    //     if (Auth::user()->role === 'admin') {
+    //         // Admin sees all batches with TOCs
+    //         $batches = Batch::with(['tocs', 'trainers'])->get();
+    //     }
+
+    //     if (Auth::user()->role === 'trainer') {
+    //         // Trainer sees only their assigned batches
+    //         $batches = Auth::user()
+    //             ->trainerBatches()
+    //             ->with('tocs')
+    //             ->get();
+    //     }
+
+    //     return view('batch_toc.progress-index', compact('batches'));
+    // }
+
     public function progressIndex()
     {
-        if (Auth::user()->role === 'admin') {
-            // Admin sees all batches with TOCs
-            $batches = Batch::with(['tocs', 'trainers'])->get();
-        }
+        $user = auth()->user();
 
-        if (Auth::user()->role === 'trainer') {
-            // Trainer sees only their assigned batches
-            $batches = Auth::user()
-                ->trainerBatches()
-                ->with('tocs')
+        if ($user->role === 'learner') {
+            $batches = \App\Models\Batch::with('tocs')
+                ->whereHas('learners', function ($q) use ($user) {
+                    $q->where('users.id', $user->id);
+                })
                 ->get();
+        } else {
+            $batches = \App\Models\Batch::with('tocs')->get();
         }
 
         return view('batch_toc.progress-index', compact('batches'));
