@@ -87,10 +87,9 @@ Route::middleware(['auth', 'tenant'])->group(function () {
             ->name('batches.toc.index');
 
         Route::get('batches/{batch}/toc/{toc}', [BatchTocController::class, 'show'])
-            ->name('batches.toc.show');
+            ->name('batches.toc.show'); 
 
-        // BATCH PROGRESS 
-        Route::get('progress', [BatchTocController::class, 'progressIndex'])
+            Route::get('/progress/{batchId?}', [BatchTocController::class, 'progressIndex'])
             ->name('progress.index');
     });
 
@@ -114,15 +113,14 @@ Route::middleware(['auth', 'tenant'])->group(function () {
     | ADMIN + TRAINER
     |--------------------------------------------------------------------------
     */
-    Route::middleware('admin.trainer')->group(function () {
-
+    Route::middleware('role:admin,trainer')->group(function () {
         Route::resource('batch-sessions', BatchSessionController::class);
 
         Route::get('/batch-sessions/{session}/attendance', [SessionAttendanceController::class, 'index'])->name('sessions.attendance.index');
         Route::post('/batch-sessions/{session}/attendance', [SessionAttendanceController::class, 'store'])->name('sessions.attendance.store');
         Route::post('/batch-sessions/{session}/attendance/email', [SessionAttendanceController::class, 'sendAttendanceEmail'])->name('sessions.attendance.email');
 
-        Route::get('reports/attendance/filter', [AttendanceReportController::class, 'filter'])->name('reports.attendance.filter');
+
 
         Route::resource('questions', QuestionController::class);
         Route::resource('quizzes', QuizController::class);
@@ -238,17 +236,19 @@ Route::middleware(['auth', 'tenant'])->group(function () {
     | REPORTS
     |--------------------------------------------------------------------------
     */
-    Route::middleware(['role:admin,trainer'])->prefix('reports')->name('reports.')->group(function () {
+    Route::middleware(['role:admin,trainer,learner'])->prefix('reports')->name('reports.')->group(function () {
 
         Route::get('attendance', [AttendanceReportController::class, 'index'])->name('attendance.index');
         Route::get('attendance/excel', [AttendanceReportController::class, 'exportExcel'])->name('attendance.excel');
         Route::get('attendance/pdf', [AttendanceReportController::class, 'exportPdf'])->name('attendance.pdf');
+        Route::get('attendance/filter', [AttendanceReportController::class, 'filter'])->name('attendance.filter');
 
         Route::get('quiz', [QuizReportController::class, 'index'])->name('quiz.index');
         Route::get('quiz/filter', [QuizReportController::class, 'filter'])->name('quiz.filter');
         Route::get('quiz/by-batch/{batch}', [QuizReportController::class, 'getQuizzesByBatch'])->name('quiz.byBatch');
         Route::get('quiz/excel', [QuizReportController::class, 'exportExcel'])->name('quiz.excel');
         Route::get('quiz/pdf', [QuizReportController::class, 'exportPdf'])->name('quiz.pdf');
+
 
         Route::get('feedback', [FeedbackReportController::class, 'index'])->name('feedback.index');
         Route::get('feedback/filter', [FeedbackReportController::class, 'filter'])

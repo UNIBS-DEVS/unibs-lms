@@ -100,10 +100,10 @@
                                         <span class="input-group-text bg-light">
                                             <i class="fa fa-calendar"></i>
                                         </span>
-                                        <input type="date" name="plan_start_date"
-                                            class="form-control @error('plan_start_date') is-invalid @enderror"
-                                            value="{{ old('plan_start_date', $toc->plan_start_date) }}" required>
-                                        @error('plan_start_date')
+                                        <input type="date" name="planned_start_date"
+                                            class="form-control @error('planned_start_date') is-invalid @enderror"
+                                            value="{{ old('planned_start_date', $toc->planned_start_date) }}" required>
+                                        @error('planned_start_date')
                                             <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
                                     </div>
@@ -118,10 +118,10 @@
                                         <span class="input-group-text bg-light">
                                             <i class="fa fa-calendar-check"></i>
                                         </span>
-                                        <input type="date" name="plan_end_date"
-                                            class="form-control @error('plan_end_date') is-invalid @enderror"
-                                            value="{{ old('plan_end_date', $toc->plan_end_date) }}" required>
-                                        @error('plan_end_date')
+                                        <input type="date" name="planned_end_date"
+                                            class="form-control @error('planned_end_date') is-invalid @enderror"
+                                            value="{{ old('planned_end_date', $toc->planned_end_date) }}" required>
+                                        @error('planned_end_date')
                                             <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
                                     </div>

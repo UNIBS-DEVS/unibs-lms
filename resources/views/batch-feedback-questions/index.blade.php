@@ -28,6 +28,14 @@
                 <i class="fa fa-plus"></i>
             </a>
 
+            {{-- <a href="{{ route('batches.index', $batch->id) }}" class="btn btn-primary">
+                <i class="fa fa-plus"></i>
+            </a> --}}
+
+            <a href="{{ route('batches.index', $batch->id) }}" class="btn btn-secondary">
+                <i class="fa-solid fa-arrow-left"></i>
+            </a>
+
         </div>
     </div>
 

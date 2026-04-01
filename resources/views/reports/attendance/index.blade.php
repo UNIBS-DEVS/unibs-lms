@@ -42,12 +42,12 @@
                                 </option>
                             @endforeach
                         </select>
-                    </div>
+                    </div> 
 
                     <div class="col-md-2">
                         <label class="form-label">From Date</label>
                         <input type="date" name="from_date" class="form-control">
-                    </div>
+                    </div>    
 
                     <div class="col-md-2">
                         <label class="form-label">To Date</label>

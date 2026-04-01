@@ -49,9 +49,17 @@
                     <div class="col-md-4">
                         <label>Feedback Type</label>
                         <select name="type" class="form-select">
-                            <option value="">Select</option>
-                            <option value="trainer">Trainer</option>
-                            <option value="learner">Learner</option>
+
+                            @if (auth()->user()->role === 'admin')
+                                <option value="">Select</option>
+                                <option value="trainer">Trainer</option>
+                                <option value="learner">Learner</option>
+                            @elseif(auth()->user()->role === 'trainer')
+                                <option value="learner" selected>Learner</option>
+                            @elseif(auth()->user()->role === 'learner')
+                                <option value="trainer" selected>Trainer</option>
+                            @endif
+
                         </select>
                     </div>
 

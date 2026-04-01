@@ -80,23 +80,20 @@
 
                             <!-- PRESENT -->
                             <td class="text-center">
-                                <input type="checkbox" name="attendance[{{ $learner->id }}][present]"
+                                <input type="checkbox" name="attendance[{{ $learner->id }}][is_present]"
                                     class="form-check-input attendance-present present-checkbox"
-                                    {{ $att?->present === 'present' ? 'checked' : '' }}>
-                            </td>
+                                    {{ $att?->is_present ? 'checked' : '' }} </td>
 
-                            <!-- LATE -->
+                                <!-- LATE -->
                             <td class="text-center">
                                 <input type="checkbox" name="attendance[{{ $learner->id }}][late_entry]"
-                                    class="form-check-input attendance-present"
-                                    {{ $att?->late_entry === 'yes' ? 'checked' : '' }}>
+                                    class="form-check-input attendance-present" {{ $att?->late_entry ? 'checked' : '' }}>
                             </td>
 
                             <!-- EARLY EXIT -->
                             <td class="text-center">
                                 <input type="checkbox" name="attendance[{{ $learner->id }}][early_exit]"
-                                    class="form-check-input attendance-present"
-                                    {{ $att?->early_exit === 'yes' ? 'checked' : '' }}>
+                                    class="form-check-input attendance-present" {{ $att?->early_exit ? 'checked' : '' }}>
                             </td>
 
                             <!-- REMARKS -->

@@ -71,6 +71,10 @@
                                     title="View">
                                     <i class="fa fa-eye"></i>
                                 </a>
+
+                                <a href="{{ route('progress.index', $batch->id) }}" class="btn btn-primary btn-sm">
+                                    <i class="fa fa-chart-line"></i>
+                                </a>
                             </td>
                         </tr>
                     @endforeach

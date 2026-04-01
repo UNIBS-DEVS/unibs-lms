@@ -45,7 +45,7 @@ class BatchTrainerController extends Controller
             ->orderBy('name')
             ->get();
 
-        // Trainers already in batch
+        // Assigned Trainers (already in batch)
         $assignedTrainers = $batch->trainers;
 
         // Trainers NOT in this batch

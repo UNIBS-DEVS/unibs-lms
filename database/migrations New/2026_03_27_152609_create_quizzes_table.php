@@ -16,8 +16,10 @@ return new class extends Migration
 
             $table->foreignId('batch_id')->constrained()->cascadeOnDelete();
 
+            $table->foreignId('batch_session_id')->nullable()->constrained()->nullOnDelete();
+
             $table->string('title');
-            
+
             $table->enum('quiz_type', ['daily', 'weekly', 'monthly', 'need based']);
 
             $table->unsignedTinyInteger('minimum_passing_percentage')->default(70);
@@ -43,8 +45,8 @@ return new class extends Migration
 
             $table->enum('status', ['active', 'inactive'])->default('inactive');
 
-            $table->foreignId('created_by')->constrained('users');
-            $table->foreignId('updated_by')->nullable()->constrained('users');
+            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignId('updated_by')->nullable()->constrained('users')->nullOnDelete();
 
             $table->timestamps();
         });

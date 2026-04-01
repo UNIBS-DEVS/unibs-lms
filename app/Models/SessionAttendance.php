@@ -17,7 +17,7 @@ class SessionAttendance extends Model
     protected $fillable = [
         'session_id',
         'learner_id',
-        'present',       // 'present' | 'absent'
+        'is_present',
         'late_entry',    // 'yes' | 'no'
         'early_exit',    // 'yes' | 'no'
         'marked_at',
@@ -30,7 +30,10 @@ class SessionAttendance extends Model
      * The attributes that should be cast.
      */
     protected $casts = [
-        'marked_at' => 'datetime',
+        'is_present' => 'boolean',
+        'late_entry' => 'boolean',
+        'early_exit' => 'boolean',
+        'marked_at'  => 'datetime',
     ];
 
     /* -----------------------------------------------------------------
@@ -58,16 +61,16 @@ class SessionAttendance extends Model
 
     public function isPresent(): bool
     {
-        return $this->present === 'present';
+        return $this->is_present;
     }
 
     public function isLate(): bool
     {
-        return $this->late_entry === 'yes';
+        return $this->late_entry;
     }
 
     public function isEarlyExit(): bool
     {
-        return $this->early_exit === 'yes';
+        return $this->early_exit;
     }
 }

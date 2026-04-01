@@ -83,7 +83,6 @@ class BatchFeedbackQuestionController extends Controller
     {
         $defaults = DefaultFeedback::all();
 
-        // dd($defaults);
         $inserted = 0;
 
         foreach ($defaults as $df) {

@@ -28,7 +28,7 @@
             text-align: center;
         }
 
-        .present {
+        .is_present {
             background-color: #28a745;
             color: #fff;
             font-weight: bold;
@@ -106,7 +106,6 @@
         </thead>
 
         <tbody>
-        <tbody>
             @foreach ($attendance as $i => $row)
                 <tr>
                     <td>{{ $i + 1 }}</td>
@@ -115,29 +114,29 @@
                     {{-- Present --}}
                     <td
                         style="
-                            background-color: {{ $row->present === 'present' ? '#28a745' : '#dc3545' }};
+                            background-color: {{ $row->is_present ? '#28a745' : '#dc3545' }};
                             color: #ffffff;
                             font-weight: bold;
                         ">
-                        {{ $row->present === 'present' ? 'Yes' : 'No' }}
+                        {{ $row->is_present ? 'Yes' : 'No' }}
                     </td>
 
                     {{-- Late Entry --}}
                     <td
                         style="
-                            background-color: {{ $row->late_entry === 'yes' ? '#ffc107' : 'transparent' }};
-                            color: {{ $row->late_entry === 'yes' ? '#000000' : '#000000' }};
+                            background-color: {{ $row->late_entry ? '#ffc107' : 'transparent' }};
+                            color: #000000;
                         ">
-                        {{ $row->late_entry === 'yes' ? 'Yes' : '-' }}
+                        {{ $row->late_entry ? 'Yes' : '-' }}
                     </td>
 
                     {{-- Early Exit --}}
                     <td
                         style="
-                            background-color: {{ $row->early_exit === 'yes' ? '#ffc107' : 'transparent' }};
-                            color: {{ $row->early_exit === 'yes' ? '#000000' : '#000000' }};
+                            background-color: {{ $row->early_exit ? '#ffc107' : 'transparent' }};
+                            color: #000000;
                         ">
-                        {{ $row->early_exit === 'yes' ? 'Yes' : '-' }}
+                        {{ $row->early_exit ? 'Yes' : '-' }}
                     </td>
 
                     {{-- Remarks --}}
@@ -145,7 +144,7 @@
                 </tr>
             @endforeach
         </tbody>
-        </tbody>
+
     </table>
 
     {{-- FOOTER --}}

@@ -39,24 +39,8 @@ class Batch extends Model
             'batch_learners',
             'batch_id',
             'learner_id',
-        )->where('role', 'learner');
+        )->where('role', 'learner')->withTimestamps();
     }
-
-    // public function learners()
-    // {
-    //     return $this->belongsToMany(User::class, 'batch_user', 'batch_id', 'learner_id');
-    // }
-
-    /** ONLY Trainer via pivot */
-    // public function trainers()
-    // {
-    //     return $this->belongsToMany(
-    //         User::class,
-    //         'batch_trainers',
-    //         'batch_id',
-    //         'trainer_id'
-    //     )->where('role', 'trainer');
-    // }
 
     public function trainers()
     {
@@ -65,9 +49,8 @@ class Batch extends Model
             'batch_trainers',
             'batch_id',
             'trainer_id'
-        );
+        )->withTimestamps(); // ✅ ADD THIS
     }
-
 
     /** ONLY Courses via pivot*/
     public function courses()
@@ -77,7 +60,7 @@ class Batch extends Model
             'batch_courses',
             'batch_id',
             'course_id'
-        );
+        )->withTimestamps(); // ✅ ADD THIS
     }
 
     public function customer()

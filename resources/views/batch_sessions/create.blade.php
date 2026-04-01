@@ -225,6 +225,13 @@
     <script>
         $(document).ready(function() {
 
+            let oldBatch = "{{ old('batch_id') }}";
+
+            // console.log(oldBatch);
+            if (oldBatch) {
+                $('#batch_id').val(oldBatch).trigger('change');
+            }
+
             $('#batch_id').on('change', function() {
 
                 let batchId = $(this).val();

@@ -29,8 +29,11 @@ class FeedbackReportController extends Controller
     /**
      * Base Query for all filters
      */
+
     private function filteredQuery(Request $request)
     {
+        $user = Auth::user();
+
         $query = BatchFbSummary::query()
             ->with([
                 'batch:id,name',
@@ -39,17 +42,26 @@ class FeedbackReportController extends Controller
                 'details'
             ]);
 
+        // ✅ Batch filter
         if ($request->filled('batch_id')) {
             $query->where('batch_id', $request->batch_id);
         }
 
-        if ($request->filled('type')) {
-            $query->where('type', $request->type);
+        // ✅ ROLE-BASED TYPE CONTROL (MAIN FIX)
+        if ($user->role === 'trainer') {
+            $query->where('type', 'learner'); // trainer sees learner feedback
+        } elseif ($user->role === 'learner') {
+            $query->where('type', 'trainer'); // learner sees trainer feedback
+        } else {
+            // admin can filter manually
+            if ($request->filled('type')) {
+                $query->where('type', $request->type);
+            }
         }
 
-        // dd($query);
         return $query->latest('created_at');
     }
+
 
     /**
      * AJAX Filter
@@ -107,16 +119,19 @@ class FeedbackReportController extends Controller
         }
 
         if ($user->role === 'trainer') {
-
             return Batch::whereHas('trainers', function ($q) use ($user) {
-
                 $q->where('trainer_id', $user->id);
             })->orderBy('name')->get();
         }
 
-        return Batch::where('customer_id', $user->id)
-            ->orderBy('name')
-            ->get();
+        // ✅ FIX FOR LEARNER
+        if ($user->role === 'learner') {
+            return Batch::whereHas('learners', function ($q) use ($user) {
+                $q->where('learner_id', $user->id);
+            })->orderBy('name')->get();
+        }
+
+        return collect(); // fallback
     }
 
     /**

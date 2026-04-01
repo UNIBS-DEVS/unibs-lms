@@ -62,7 +62,7 @@ class SessionAttendanceController extends Controller
 
         foreach ($request->attendance as $learnerId => $data) {
 
-            $isPresent = isset($data['present']) ? 'present' : 'absent';
+            $isPresent = isset($data['is_present']);
 
             SessionAttendance::updateOrCreate(
                 [
@@ -70,9 +70,10 @@ class SessionAttendanceController extends Controller
                     'learner_id' => $learnerId,
                 ],
                 [
-                    'present'     => $isPresent,
-                    'late_entry'  => isset($data['late_entry']) ? 'yes' : 'no',
-                    'early_exit'  => isset($data['early_exit']) ? 'yes' : 'no',
+                    'is_present' => $isPresent,
+                    'late_entry' => isset($data['late_entry']),
+                    'early_exit' => isset($data['early_exit']),
+
                     'remarks'     => $data['remarks'] ?? null,
                     'marked_at'   => now(),
                     'marked_by'   => Auth::id(),

@@ -39,32 +39,28 @@ class BatchCourseController extends Controller
         // Assigned courses (already in batch)
         $assignedCourses = $batch->courses;
 
-        // Available courses (active but not assigned)
-        $availableCourses = $allCourses->diff($assignedCourses);
-
         // Courses NOT in this batch
         $availableCourses = $allCourses->whereNotIn(
             'id',
             $assignedCourses->pluck('id')
         );
 
-        return view('batch_courses.edit', compact('batch', 'assignedCourses', 'availableCourses'));
+        return view('batch_courses.edit', compact('batch', 'availableCourses', 'assignedCourses'));
     }
 
     public function update(Request $request, $id)
     {
         $request->validate([
-            'courses' => 'required|array', // Must be an array
-            'courses.*' => 'exists:courses,id', // Each element must exist in courses table
+            'courses' => 'nullable|array',
+            'courses.*' => 'exists:courses,id',
         ]);
 
         $batch = Batch::findOrFail($id);
 
-        // Assign multiple courses (replace old ones)
-        $batch->courses()->sync($request->courses);
+        $batch->courses()->sync($request->courses ?? []);
 
         return redirect()
             ->route('batch-courses.index')
-            ->with('success', 'Courses assigned to batch successfully.');
+            ->with('success', 'Courses updated successfully.');
     }
 }

@@ -190,7 +190,7 @@
                     data: $('#filterForm').serialize(),
 
                     success: function(response) {
-
+                        console.log(response);
                         let rows = '';
                         let index = 1;
 

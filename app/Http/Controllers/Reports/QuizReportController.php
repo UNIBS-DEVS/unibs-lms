@@ -19,8 +19,28 @@ class QuizReportController extends Controller
 
     public function index(Request $request)
     {
+        $user = Auth::user();
+
+        // dd($user);
+
+        if ($user->role === 'admin') {
+            $batches = Batch::orderBy('name')->get();
+        } elseif ($user->role === 'trainer') {
+            $batches = Batch::whereHas('trainers', fn($q) => $q->where('trainer_id', $user->id))
+                ->orderBy('name')
+                ->get();
+        } elseif ($user->role === 'learner') {
+            $batches = Batch::whereHas('learners', fn($q) => $q->where('learner_id', $user->id))
+                ->orderBy('name')
+                ->get();
+        } else {
+            $batches = Batch::where('customer_id', $user->id)
+                ->orderBy('name')
+                ->get();
+        }
+
         return view('reports.quiz.index', [
-            'batches' => Batch::orderBy('name')->get(),
+            'batches' => $batches,
         ]);
     }
 
@@ -29,6 +49,8 @@ class QuizReportController extends Controller
      */
     private function filteredQuery(Request $request)
     {
+        $user = Auth::user();
+
         $query = QuizAttempt::query()
             ->whereIn('status', [
                 'completed_auto',
@@ -36,16 +58,19 @@ class QuizReportController extends Controller
                 'result_published',
             ]);
 
+        // ✅ Batch filter
         if ($request->filled('batch_id')) {
             $query->whereHas('quiz', function ($q) use ($request) {
                 $q->where('batch_id', $request->batch_id);
             });
         }
 
+        // ✅ Quiz filter
         if ($request->filled('quiz_id')) {
             $query->where('quiz_id', $request->quiz_id);
         }
 
+        // ✅ Date filters
         if ($request->filled('from_date')) {
             $query->whereDate('started_at', '>=', $request->from_date);
         }
@@ -54,8 +79,14 @@ class QuizReportController extends Controller
             $query->whereDate('started_at', '<=', $request->to_date);
         }
 
+        // ✅ Status filter
         if ($request->filled('status')) {
             $query->where('status', $request->status);
+        }
+
+        // 🔥 IMPORTANT: Learner restriction
+        if ($user->role === 'learner') {
+            $query->where('user_id', $user->id);
         }
 
         return $query;
@@ -97,6 +128,8 @@ class QuizReportController extends Controller
 
         $attempts = $this->getFinalAttempts($request);
 
+        // dd($attempts);
+
         $summary = [
             'total' => $attempts->count(),
             'completed' => $attempts->whereIn('status', [
@@ -130,6 +163,7 @@ class QuizReportController extends Controller
                     ->format('d M Y, h:i A'),
             ];
         });
+
 
         return response()->json([
             'data' => $data,

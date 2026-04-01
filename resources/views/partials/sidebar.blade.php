@@ -241,7 +241,7 @@
     {{-- ================= END STUDY MATERIAL ================= --}}
 
     {{-- ================= REPORTS ================= --}}
-    @if (in_array(auth()->user()->role, ['admin', 'trainer']))
+    @if (in_array(auth()->user()->role, ['admin', 'trainer', 'learner']))
         <a data-bs-toggle="collapse" href="#reportsMenu" role="button" class="sidebar-submenu"
             aria-expanded="{{ request()->routeIs('reports.*') ? 'true' : 'false' }}" aria-controls="reportsMenu">
 

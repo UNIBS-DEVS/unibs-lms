@@ -142,9 +142,9 @@
 
             function loadQuestions() {
 
-                if (!userSelect.value) return;
+                if (!userSelect.value || !batchSelect.value) return;
 
-                fetch(`{{ route('feedback.share.questions') }}`)
+                fetch(`{{ route('feedback.share.questions') }}?batch_id=${batchSelect.value}`)
                     .then(res => res.json())
                     .then(data => {
 
@@ -152,11 +152,12 @@
 
                         if (data.length === 0) {
                             questionsBody.innerHTML = `
-                    <tr>
-                        <td colspan="3" class="text-center text-muted">
-                            No questions available
-                        </td>
-                    </tr>`;
+                            <tr>
+                                <td colspan="3" class="text-center text-muted">
+                                    Please select user
+                                </td>
+                            </tr>
+                        `;
                             return;
                         }
 

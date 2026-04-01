@@ -23,13 +23,22 @@ class PerformanceReportController extends Controller
 
     public function index()
     {
-        $batches = Batch::orderBy('name')->get();
+        $user = Auth::user();
+
+        $batches = $this->getUserBatches($user);
 
         return view('reports.performance.index', compact('batches'));
     }
 
     public function filter(Request $request)
     {
+        if (!$request->batch_id) {
+            return response()->json([
+                'data' => [],
+                'summary' => []
+            ]);
+        }
+
         $batch_id = $request->batch_id;
 
         if (!$batch_id) {
@@ -44,7 +53,28 @@ class PerformanceReportController extends Controller
             ]);
         }
 
-        $batch = Batch::with('learners')->findOrFail($batch_id);
+        $user = Auth::user();
+
+        $batch = Batch::with('learners')
+            ->where('id', $batch_id)
+
+            ->when($user->role === 'trainer', function ($q) use ($user) {
+                $q->whereHas(
+                    'trainers',
+                    fn($t) =>
+                    $t->where('trainer_id', $user->id)
+                );
+            })
+
+            ->when($user->role === 'learner', function ($q) use ($user) {
+                $q->whereHas(
+                    'learners',
+                    fn($l) =>
+                    $l->where('learner_id', $user->id)
+                );
+            })
+
+            ->firstOrFail();
 
         $sessions = BatchSession::where('batch_id', $batch_id)
             ->when($request->start_date, fn($q) =>
@@ -55,7 +85,13 @@ class PerformanceReportController extends Controller
 
         $data = [];
 
-        foreach ($batch->learners as $learner) {
+        $learners = $batch->learners;
+
+        if ($user->role === 'learner') {
+            $learners = $learners->where('id', $user->id);
+        }
+
+        foreach ($learners as $learner) {
 
             /* ==================================================
                STEP 1 : ATTENDANCE SCORE
@@ -347,5 +383,26 @@ class PerformanceReportController extends Controller
         ])
             ->setPaper('a4', 'landscape')
             ->download('Performance Report-' . now()->format('Ymd-His') . '.pdf');
+    }
+
+    private function getUserBatches($user)
+    {
+        if ($user->role === 'admin') {
+            return Batch::orderBy('name')->get();
+        }
+
+        if ($user->role === 'trainer') {
+            return Batch::whereHas('trainers', function ($q) use ($user) {
+                $q->where('trainer_id', $user->id);
+            })->orderBy('name')->get();
+        }
+
+        if ($user->role === 'learner') {
+            return Batch::whereHas('learners', function ($q) use ($user) {
+                $q->where('learner_id', $user->id);
+            })->orderBy('name')->get();
+        }
+
+        return collect();
     }
 }

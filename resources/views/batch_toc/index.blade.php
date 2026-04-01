@@ -28,14 +28,16 @@
                 <tr>
                     <th>Title</th>
                     <th width="140">Planned Dates</th>
-                    <th width="140">Actual Dates</th>
-                    <th width="140" class="text-center">Progress</th>
-                    <th width="120">Status</th>
-                    <th width="100" class="text-center">Actions</th>
+                    <th width="140">Course</th>
+                    <th width="140" class="text-center">Trainer</th>
+                    <th width="120">Remarks</th>
+                    @if (in_array(auth()->user()->role, ['admin', 'trainer']))
+                        <th width="100" class="text-center">Actions</th>
+                    @endif
                 </tr>
 
                 <tr class="filter-row">
-                    @foreach (['Title', 'Planned', 'Actual', 'Progress', 'Status'] as $label)
+                    @foreach (['Title', 'Planned', 'Course', 'Trainer', 'Remarks'] as $label)
                         <th>
                             <div class="input-group input-group-sm">
                                 <input type="text" class="form-control column-search" placeholder="{{ $label }}">
@@ -45,7 +47,9 @@
                             </div>
                         </th>
                     @endforeach
-                    <th></th>
+                    @if (in_array(auth()->user()->role, ['admin', 'trainer']))
+                        <th></th>
+                    @endif
                 </tr>
             </thead>
 
@@ -53,50 +57,30 @@
                 {{-- @forelse ($tocs as $item) --}}
                 @foreach ($tocs as $item)
                     <tr>
+                        {{-- Title --}}
                         <td class="fw-semibold">{{ $item->title }}</td>
 
+                        {{-- Planned Dates --}}
                         <td>
-                            {{ \Carbon\Carbon::parse($item->plan_start_date)->format('d M Y') }}<br>
+                            {{ \Carbon\Carbon::parse($item->planned_start_date)->format('d M Y') }}<br>
                             <small class="text-muted">
-                                to {{ \Carbon\Carbon::parse($item->plan_end_date)->format('d M Y') }}
+                                to {{ \Carbon\Carbon::parse($item->planned_end_date)->format('d M Y') }}
                             </small>
                         </td>
 
+                        {{-- Course --}}
                         <td>
-                            @if ($item->actual_start_date)
-                                {{ \Carbon\Carbon::parse($item->actual_start_date)->format('d M Y') }}<br>
-                                <small class="text-muted">
-                                    to
-                                    {{ $item->actual_end_date ? \Carbon\Carbon::parse($item->actual_end_date)->format('d M Y') : '-' }}
-                                </small>
-                            @else
-                                -
-                            @endif
+                            {{ $item->course->name ?? '-' }}
                         </td>
 
+                        {{-- Trainer --}}
                         <td class="text-center">
-                            <div class="progress">
-                                <div class="progress-bar bg-success" style="width: {{ $item->percentage }}%">
-                                    {{ $item->percentage }}%
-                                </div>
-                            </div>
+                            {{ $item->trainer->name ?? '-' }}
                         </td>
 
+                        {{-- Remarks --}}
                         <td>
-                            @php
-                                $statusMap = [
-                                    'planned' => ['secondary', 'calendar'],
-                                    'in_progress' => ['primary', 'spinner'],
-                                    'on_hold' => ['warning', 'pause-circle'],
-                                    'completed' => ['success', 'check-circle'],
-                                ];
-                                [$color, $icon] = $statusMap[$item->status];
-                            @endphp
-
-                            <span class="badge bg-{{ $color }}">
-                                <i class="fa fa-{{ $icon }} me-1"></i>
-                                {{ ucfirst(str_replace('_', ' ', $item->status)) }}
-                            </span>
+                            {{ $item->remark_admin ?? '-' }}
                         </td>
 
                         @if (in_array(auth()->user()->role, ['admin', 'trainer']))
@@ -115,14 +99,7 @@
                                     </button>
                                 </form>
                             </td>
-                        @else
-                            <td class="text-center">
-                                <a href="{{ route('progress.index') }}" class="btn btn-primary btn-sm">
-                                    <i class="fa fa-chart-line"></i>
-                                </a>
-                            </td>
                         @endif
-                    </tr>
                 @endforeach
 
             </tbody>

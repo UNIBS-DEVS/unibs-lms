@@ -19,10 +19,16 @@ class AttendanceReportController extends Controller
     {
         $user = Auth::user();
 
+        // dd($user);
+
         if ($user->role === 'admin') {
             $batches = Batch::orderBy('name')->get();
         } elseif ($user->role === 'trainer') {
             $batches = Batch::whereHas('trainers', fn($q) => $q->where('trainer_id', $user->id))
+                ->orderBy('name')
+                ->get();
+        } elseif ($user->role === 'learner') {
+            $batches = Batch::whereHas('learners', fn($q) => $q->where('learner_id', $user->id))
                 ->orderBy('name')
                 ->get();
         } else {
@@ -43,40 +49,83 @@ class AttendanceReportController extends Controller
         ]);
     }
 
+    // private function filteredQuery(Request $request)
+    // {
+    //     $query = SessionAttendance::with([
+    //         'learner:id,name',
+    //         'session:id,batch_id,session_name,start_date,start_time',
+    //         'session.batch:id,name',
+    //         'session.course:id,name',
+    //         'session.trainer:id,name',
+    //     ]);
+
+
+    //     if ($request->filled('batch_id')) {
+    //         $query->whereHas('session', fn($q) => $q->where('batch_id', $request->batch_id));
+    //     }
+
+    //     if ($request->filled('from_date')) {
+    //         $query->whereHas('session', fn($q) => $q->whereDate('start_date', '>=', $request->from_date));
+    //     }
+
+    //     if ($request->filled('to_date')) {
+    //         $query->whereHas('session', fn($q) => $q->whereDate('start_date', '<=', $request->to_date));
+    //     }
+
+    //     // ✅ ADD THIS
+    //     if ($request->filled('status')) {
+    //         if ($request->status === 'present') {
+    //             $query->where('present', 'present');
+    //         } elseif ($request->status === 'absent') {
+    //             $query->where('present', 'absent');
+    //         }
+    //     }
+
+    //     return $query;
+    // }
+
     private function filteredQuery(Request $request)
-    {
-        $query = SessionAttendance::with([
-            'learner:id,name',
-            'session:id,batch_id,session_name,start_date,start_time',
-            'session.batch:id,name',
-            'session.course:id,name',
-            'session.trainer:id,name',
-        ]);
+{
+    $user = Auth::user();
 
+    $query = SessionAttendance::with([
+        'learner:id,name',
+        'session:id,batch_id,session_name,start_date,start_time',
+        'session.batch:id,name',
+        'session.course:id,name',
+        'session.trainer:id,name',
+    ]);
 
-        if ($request->filled('batch_id')) {
-            $query->whereHas('session', fn($q) => $q->where('batch_id', $request->batch_id));
-        }
-
-        if ($request->filled('from_date')) {
-            $query->whereHas('session', fn($q) => $q->whereDate('start_date', '>=', $request->from_date));
-        }
-
-        if ($request->filled('to_date')) {
-            $query->whereHas('session', fn($q) => $q->whereDate('start_date', '<=', $request->to_date));
-        }
-
-        // ✅ ADD THIS
-        if ($request->filled('status')) {
-            if ($request->status === 'present') {
-                $query->where('present', 'present');
-            } elseif ($request->status === 'absent') {
-                $query->where('present', 'absent');
-            }
-        }
-
-        return $query;
+    // ✅ Batch filter
+    if ($request->filled('batch_id')) {
+        $query->whereHas('session', fn($q) => $q->where('batch_id', $request->batch_id));
     }
+
+    // ✅ Date filters
+    if ($request->filled('from_date')) {
+        $query->whereHas('session', fn($q) => $q->whereDate('start_date', '>=', $request->from_date));
+    }
+
+    if ($request->filled('to_date')) {
+        $query->whereHas('session', fn($q) => $q->whereDate('start_date', '<=', $request->to_date));
+    }
+
+    // ✅ Status filter
+    if ($request->filled('status')) {
+        if ($request->status === 'present') {
+            $query->where('present', 'present');
+        } elseif ($request->status === 'absent') {
+            $query->where('present', 'absent');
+        }
+    }
+
+    // 🔥 IMPORTANT: Learner restriction
+    if ($user->role === 'learner') {
+        $query->where('learner_id', $user->id);
+    }
+
+    return $query;
+}
 
     // 🔹 AJAX Filter
     public function filter(Request $request)

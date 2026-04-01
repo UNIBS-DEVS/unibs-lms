@@ -26,8 +26,6 @@ class BatchFeedbackController extends Controller
             $batches = Batch::select('id', 'name')->get();
         }
 
-        // dd($batches);
-
         return view('batch-feedback.index', compact('batches'));
     }
 
@@ -83,7 +81,7 @@ class BatchFeedbackController extends Controller
     Fetch questions from default_feedbacks
     */
 
-        $questions = DefaultFeedback::whereIn('id', array_keys($scores))
+        $questions = BatchFeedbackQuestion::whereIn('id', array_keys($scores))
             ->get()
             ->keyBy('id');
 
@@ -110,31 +108,46 @@ class BatchFeedbackController extends Controller
     LOAD QUESTIONS BASED ON ROLE
     */
 
-    public function questions()
+    public function questions(Request $request)
     {
         $user = Auth::user();
 
-        // If learner gives feedback → show trainer questions
         if ($user->role === 'learner') {
             $type = 'trainer';
-        }
-        // If trainer/admin gives feedback → show learner questions
-        else {
+        } else {
             $type = 'learner';
         }
 
         return response()->json(
             BatchFeedbackQuestion::select('id', 'question', 'category')
                 ->where('type', $type)
+                ->where('batch_id', $request->batch_id) // ✅ IMPORTANT
                 ->get()
         );
     }
 
-    public function trainers(Batch $batch)
+    public function trainers($batchId)
     {
-        return response()->json(
-            $batch->trainers()->select('users.id', 'users.name')->get()
-        );
+        $user = auth()->user();
+
+        $batch = Batch::with([
+            'trainers' => function ($q) {
+                $q->select('users.id', 'users.name');
+            }
+        ])->findOrFail($batchId);
+
+        // 🔐 Restrict learner → only his batches
+        if ($user->role === 'learner') {
+            $isAllowed = $batch->learners()
+                ->where('learner_id', $user->id)
+                ->exists();
+
+            if (!$isAllowed) {
+                return response()->json([], 403);
+            }
+        }
+
+        return response()->json($batch->trainers);
     }
 
     public function learners(Batch $batch)
@@ -144,27 +157,10 @@ class BatchFeedbackController extends Controller
         );
     }
 
-    // public function previous(Request $request)
-    // {
-    //     $summary = BatchFbSummary::where('batch_id', $request->batch_id)
-    //         ->where('type', $request->type)
-    //         ->where('submitted_by', Auth::id())
-    //         ->with('details')
-    //         ->first();
+    public function getTrainersByBatch($batchId)
+    {
+        $batch = Batch::with('trainers:id,name')->findOrFail($batchId);
 
-    //     if (!$summary) {
-    //         return response()->json(null);
-    //     }
-
-    //     // Convert question text → array
-    //     $scores = [];
-    //     foreach ($summary->details as $detail) {
-    //         $scores[$detail->question] = $detail->score;
-    //     }
-
-    //     return response()->json([
-    //         'remarks' => $summary->remarks,
-    //         'scores'  => $scores,
-    //     ]);
-    // }
+        return response()->json($batch->trainers);
+    }
 }
