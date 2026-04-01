@@ -19,16 +19,18 @@ class AttendanceReportController extends Controller
     {
         $user = Auth::user();
 
-        // dd($user);
-
         if ($user->role === 'admin') {
             $batches = Batch::orderBy('name')->get();
         } elseif ($user->role === 'trainer') {
-            $batches = Batch::whereHas('trainers', fn($q) => $q->where('trainer_id', $user->id))
+            $batches = Batch::whereHas('trainers', function ($q) use ($user) {
+                $q->where('users.id', $user->id);
+            })
                 ->orderBy('name')
                 ->get();
         } elseif ($user->role === 'learner') {
-            $batches = Batch::whereHas('learners', fn($q) => $q->where('learner_id', $user->id))
+            $batches = Batch::whereHas('learners', function ($q) use ($user) {
+                $q->where('users.id', $user->id);
+            })
                 ->orderBy('name')
                 ->get();
         } else {
@@ -49,83 +51,52 @@ class AttendanceReportController extends Controller
         ]);
     }
 
-    // private function filteredQuery(Request $request)
-    // {
-    //     $query = SessionAttendance::with([
-    //         'learner:id,name',
-    //         'session:id,batch_id,session_name,start_date,start_time',
-    //         'session.batch:id,name',
-    //         'session.course:id,name',
-    //         'session.trainer:id,name',
-    //     ]);
-
-
-    //     if ($request->filled('batch_id')) {
-    //         $query->whereHas('session', fn($q) => $q->where('batch_id', $request->batch_id));
-    //     }
-
-    //     if ($request->filled('from_date')) {
-    //         $query->whereHas('session', fn($q) => $q->whereDate('start_date', '>=', $request->from_date));
-    //     }
-
-    //     if ($request->filled('to_date')) {
-    //         $query->whereHas('session', fn($q) => $q->whereDate('start_date', '<=', $request->to_date));
-    //     }
-
-    //     // ✅ ADD THIS
-    //     if ($request->filled('status')) {
-    //         if ($request->status === 'present') {
-    //             $query->where('present', 'present');
-    //         } elseif ($request->status === 'absent') {
-    //             $query->where('present', 'absent');
-    //         }
-    //     }
-
-    //     return $query;
-    // }
-
     private function filteredQuery(Request $request)
-{
-    $user = Auth::user();
+    {
+        $user = Auth::user();
 
-    $query = SessionAttendance::with([
-        'learner:id,name',
-        'session:id,batch_id,session_name,start_date,start_time',
-        'session.batch:id,name',
-        'session.course:id,name',
-        'session.trainer:id,name',
-    ]);
+        $query = SessionAttendance::with([
+            'learner:id,name',
+            'session:id,batch_id,session_name,start_date,start_time',
+            'session.batch:id,name',
+            'session.course:id,name',
+            'session.trainer:id,name',
+        ]);
 
-    // ✅ Batch filter
-    if ($request->filled('batch_id')) {
-        $query->whereHas('session', fn($q) => $q->where('batch_id', $request->batch_id));
-    }
-
-    // ✅ Date filters
-    if ($request->filled('from_date')) {
-        $query->whereHas('session', fn($q) => $q->whereDate('start_date', '>=', $request->from_date));
-    }
-
-    if ($request->filled('to_date')) {
-        $query->whereHas('session', fn($q) => $q->whereDate('start_date', '<=', $request->to_date));
-    }
-
-    // ✅ Status filter
-    if ($request->filled('status')) {
-        if ($request->status === 'present') {
-            $query->where('present', 'present');
-        } elseif ($request->status === 'absent') {
-            $query->where('present', 'absent');
+        // ✅ Batch filter
+        if ($request->filled('batch_id')) {
+            $query->whereHas('session', fn($q) => $q->where('batch_id', $request->batch_id));
         }
-    }
 
-    // 🔥 IMPORTANT: Learner restriction
-    if ($user->role === 'learner') {
-        $query->where('learner_id', $user->id);
-    }
+        // ✅ Date filters
+        if ($request->filled('from_date')) {
+            $query->whereHas('session', fn($q) => $q->whereDate('start_date', '>=', $request->from_date));
+        }
 
-    return $query;
-}
+        if ($request->filled('to_date')) {
+            $query->whereHas('session', fn($q) => $q->whereDate('start_date', '<=', $request->to_date));
+        }
+
+        if ($user->role === 'trainer') {
+            $query->whereHas('session.batch.trainers', function ($q) use ($user) {
+                $q->where('users.id', $user->id);
+            });
+        }
+
+        // ✅ Status filter
+        if ($request->status === 'present') {
+            $query->where('is_present', 1);
+        } elseif ($request->status === 'absent') {
+            $query->where('is_present', 0);
+        }
+
+        // 🔥 IMPORTANT: Learner restriction
+        if ($user->role === 'learner') {
+            $query->where('learner_id', $user->id);
+        }
+
+        return $query;
+    }
 
     // 🔹 AJAX Filter
     public function filter(Request $request)
@@ -142,10 +113,10 @@ class AttendanceReportController extends Controller
 
         $summary = [
             'total' => $attendances->count(),
-            'present' => $attendances->where('present', 'present')->count(),
-            'absent' => $attendances->where('present', 'absent')->count(),
-            'late_entry' => $attendances->where('late_entry', 'yes')->count(),
-            'early_exit' => $attendances->where('early_exit', 'yes')->count(),
+            'present' => $attendances->where('is_present', 1)->count(),
+            'absent' => $attendances->where('is_present', 0)->count(),
+            'late_entry' => $attendances->where('late_entry', 1)->count(),
+            'early_exit' => $attendances->where('early_exit', 1)->count(),
         ];
 
         $data = $attendances->map(function ($item) {
@@ -157,9 +128,9 @@ class AttendanceReportController extends Controller
                     \Carbon\Carbon::parse($item->session->start_time)->format('H:i:s')
                     : '-',
                 'learner_name' => $item->learner->name ?? '-',
-                'present' => $item->present,
-                'late_entry' => $item->late_entry,
-                'early_exit' => $item->early_exit,
+                'present' => $item->is_present ? 'present' : 'absent',
+                'late_entry' => $item->late_entry ? 'yes' : 'no',
+                'early_exit' => $item->early_exit ? 'yes' : 'no',
                 'marked_at' => $item->marked_at
                     ? \Carbon\Carbon::parse($item->marked_at)->format('d M Y, H:i:s')
                     : '-',

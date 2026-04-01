@@ -8,8 +8,9 @@
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h3 class="mb-0">{{ $batch->name }} TOC</h3>
 
-        <div class="d-flex gap-2">
-            <a href="{{ route('dashboard.index') }}" class="btn btn-secondary">
+        <div class="d-flex gap-2"> 
+
+            <a href="{{ route('batches.index') }}" class="btn btn-secondary">
                 <i class="fa-solid fa-arrow-left"></i>
             </a>
 

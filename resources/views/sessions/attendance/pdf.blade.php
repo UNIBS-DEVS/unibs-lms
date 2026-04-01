@@ -109,7 +109,8 @@
             @foreach ($attendance as $i => $row)
                 <tr>
                     <td>{{ $i + 1 }}</td>
-                    <td>{{ $row->learner->name }}</td>
+                    <!--<td>{{ $row->learner->name }}</td>-->
+                    <td>{{ $row->learner->name }}<br>{{ $row->learner->email }}</td>
 
                     {{-- Present --}}
                     <td

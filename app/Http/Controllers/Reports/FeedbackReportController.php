@@ -42,18 +42,35 @@ class FeedbackReportController extends Controller
                 'details'
             ]);
 
-        // ✅ Batch filter
+        // Batch filter
         if ($request->filled('batch_id')) {
             $query->where('batch_id', $request->batch_id);
         }
 
-        // ✅ ROLE-BASED TYPE CONTROL (MAIN FIX)
+        /**
+         * ROLE-BASED ACCESS CONTROL
+         */
+
         if ($user->role === 'trainer') {
-            $query->where('type', 'learner'); // trainer sees learner feedback
+
+            // Only trainer's batches
+            $query->whereHas('batch.trainers', function ($q) use ($user) {
+                $q->where('trainer_id', $user->id);
+            });
+
+            // Trainer sees learner feedback
+            $query->where('type', 'learner');
         } elseif ($user->role === 'learner') {
-            $query->where('type', 'trainer'); // learner sees trainer feedback
+
+            // Learner sees trainer feedback of their batches
+            $query->where('type', 'trainer');
+
+            $query->whereHas('batch.learners', function ($q) use ($user) {
+                $q->where('learner_id', $user->id);
+            });
         } else {
-            // admin can filter manually
+
+            // Admin filter
             if ($request->filled('type')) {
                 $query->where('type', $request->type);
             }

@@ -206,17 +206,17 @@
             function loadFeedback() {
 
                 let batch = $('select[name=batch_id]').val();
-                let type = $('select[name=type]').val();
 
-                if (!batch || !type) {
+                // ✅ ONLY check batch (FIXED)
+                if (!batch) {
 
                     $('#feedbackTable').html(`
-                        <tr>
-                        <td colspan="7" class="text-center text-muted py-4">
-                        Please select Batch and Feedback Type
-                        </td>
-                        </tr>
-                        `);
+                    <tr>
+                    <td colspan="7" class="text-center text-muted py-4">
+                    Please select Batch
+                    </td>
+                    </tr>
+                `);
 
                     return;
                 }
@@ -248,46 +248,34 @@
                                     cats = '-';
                                 }
 
-                                /* Convert table score to percentage */
                                 let percent = Math.round((item.avg_score / 5) * 100);
 
                                 rows += `
-<tr>
-
-<td>${index++}</td>
-
-<td>${item.learner}</td>
-
-<td>${item.trainer}</td>
-
-<td>${cats}</td>
-
-<td>
-<span class="badge bg-success">${percent}%</span>
-</td>
-
-<td>${item.date}</td>
-
-<td>
-<a href="#" class="btn btn-sm btn-outline-primary view-feedback"
-data-id="${item.id}">
-View
-</a>
-</td>
-
-</tr>
-`;
-
+    <tr>
+    <td>${index++}</td>
+    <td>${item.learner}</td>
+    <td>${item.trainer}</td>
+    <td>${cats}</td>
+    <td><span class="badge bg-success">${percent}%</span></td>
+    <td>${item.date}</td>
+    <td>
+    <a href="#" class="btn btn-sm btn-outline-primary view-feedback"
+    data-id="${item.id}">
+    View
+    </a>
+    </td>
+    </tr>
+    `;
                             });
 
                         } else {
 
                             rows = `
-<tr>
-<td colspan="7" class="text-center">
-No records found
-</td>
-</tr>`;
+    <tr>
+    <td colspan="7" class="text-center">
+    No records found
+    </td>
+    </tr>`;
                         }
 
                         $('#feedbackTable').html(rows);
@@ -296,12 +284,18 @@ No records found
 
             }
 
+            // Submit filter
             $('#filterForm').submit(function(e) {
                 e.preventDefault();
                 loadFeedback();
             });
 
+            // ✅ Auto load on batch change (NEW)
+            $('select[name=batch_id]').change(function() {
+                loadFeedback();
+            });
 
+            // View details
             $(document).on('click', '.view-feedback', function(e) {
 
                 e.preventDefault();
@@ -315,12 +309,11 @@ No records found
                     data.forEach(function(q) {
 
                         rows += `
-<tr>
-<td>${q.question}</td>
-<td><span class="badge text-dark">${q.score} / 5</span></td>
-</tr>
-`;
-
+    <tr>
+    <td>${q.question}</td>
+    <td><span class="badge text-dark">${q.score} / 5</span></td>
+    </tr>
+    `;
                     });
 
                     $('#modalQuestions').html(rows);
@@ -334,18 +327,19 @@ No records found
 
         });
 
+        // Reset
         $('#resetFilter').click(function() {
 
             $('#filterForm')[0].reset();
             $('.select2').val('').trigger('change');
 
             $('#feedbackTable').html(`
-<tr>
-<td colspan="7" class="text-center text-muted py-4">
-Please select Batch and Feedback Type
-</td>
-</tr>
-`);
+    <tr>
+    <td colspan="7" class="text-center text-muted py-4">
+    Please select Batch
+    </td>
+    </tr>
+    `);
 
             $('.summary-total').text(0);
             $('.summary-trainer').text(0);
@@ -354,23 +348,22 @@ Please select Batch and Feedback Type
 
         });
 
+        // Export Excel
         $('#exportExcel').click(function(e) {
 
             e.preventDefault();
 
             let params = $('#filterForm').serialize();
-
             window.location = "{{ route('reports.feedback.excel') }}?" + params;
 
         });
 
-
+        // Export PDF
         $('#exportPdf').click(function(e) {
 
             e.preventDefault();
 
             let params = $('#filterForm').serialize();
-
             window.location = "{{ route('reports.feedback.pdf') }}?" + params;
 
         });

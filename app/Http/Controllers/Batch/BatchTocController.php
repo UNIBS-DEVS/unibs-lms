@@ -33,7 +33,7 @@ class BatchTocController extends Controller
 
         return view('batch_toc.index', compact('batch', 'tocs'));
     }
-    
+
     public function create(Batch $batch)
     {
         $courses = $batch->courses; // ✅ only assigned courses
@@ -114,28 +114,47 @@ class BatchTocController extends Controller
         return redirect()
             ->route('batches.toc.index', $batch)
             ->with('success', 'Batch TOC deleted successfully.');
-    } 
-    
+    }
+
     public function progressIndex($batchId = null)
     {
+        // dd('lkjhv');
         $user = auth()->user();
-    
+
         $query = \App\Models\Batch::with('tocs');
-    
+
         // 👇 If batchId is provided → filter only that batch
         if ($batchId) {
             $query->where('id', $batchId);
         }
-    
+
         // 👇 Learner restriction
         if ($user->role === 'learner') {
             $query->whereHas('learners', function ($q) use ($user) {
                 $q->where('users.id', $user->id);
             });
         }
-    
-        $batches = $query->get();
-    
+
+        // $batches = $query->get();
+
+        $user = auth()->user();
+
+        if ($user->role === 'trainer') {
+            $batches = \App\Models\Batch::whereHas('trainers', function ($query) use ($user) {
+                $query->where('users.id', $user->id);
+            })
+                ->with('tocs')
+                ->get();
+        } elseif ($user->role === 'learner') {
+            $batches = $user->batches()
+                ->with('tocs')
+                ->get();
+        } else {
+            // admin
+            $batches = \App\Models\Batch::with('tocs')->get();
+        }
+
+
         return view('batch_toc.progress-index', compact('batches'));
     }
     // Trainer edit page
